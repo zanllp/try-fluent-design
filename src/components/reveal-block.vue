@@ -22,7 +22,6 @@ export default defineComponent({
       type: Object
     }
   },
-  // :style="`background-position:top ${backgroundPos.top}px left ${backgroundPos.left}px`"
   setup (_, _ctx) {
     const ctx = _ctx as IContext
     const containerPos = reactive({ top: 0, left: 0 })
@@ -65,13 +64,16 @@ export default defineComponent({
   }
 
   .blur-layer {
-    width: 100%;
-    height: 100%;
+    position: relative;
+    top: -25%; // 把虚化位置移到中间
+    left: -25%;
+    width: 150%;
+    height: 150%;
     background: inherit;
     filter: blur(5px);
     * {
-      width: inherit;
-      height: inherit;
+      width: 100%;
+      height: 100%;
     }
     .color-layer {
       background: rgba(255, 255, 255, 0.6);
