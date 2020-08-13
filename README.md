@@ -1,5 +1,9 @@
 # fluent-design
-
+尝试在web前端实现流畅设计
+### 已实现
+* 拖拽动态模糊
+* 窗口尺寸改变
+* 暗黑模式
 ## Project setup
 ```
 yarn install
