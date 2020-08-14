@@ -31,7 +31,7 @@ export default defineComponent({
 <style lang="scss">
 .block-container {
   background-image: url("./assets/forest.jpg");
-  // background-size: cover;
+  // background-size: 1920px;
   // background-position: center;
   margin: 0;
 }

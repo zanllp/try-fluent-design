@@ -8,8 +8,7 @@
   >
     <div ref="containerRef" class="blur-layer">
       <div class="color-layer" :style="colorLayerStyle">
-
-      <div class="noise-layer" :style="colorLayerStyle"></div>
+        <div class="noise-layer" :style="colorLayerStyle"></div>
       </div>
     </div>
     <div class="content" :style="`color:${darkMode?'white':'black'}`">
@@ -90,7 +89,7 @@ export default defineComponent({
         }
         if (lastState) {
           dragState.clear()
-          lastState.forEach(state => dragState.add(state))
+          lastState.forEach((state) => dragState.add(state))
         }
       }
     }
@@ -100,16 +99,18 @@ export default defineComponent({
         resize: 'nwse-resize'
       }
       return `
-        background-position:${-(containerPos.top + 256)}px ${-(
-          containerPos.left + 256
-        )}px;
+        background-position:${-containerPos.top - 256 - 2 + 16}px ${
+        -containerPos.left - 256 - 2 + 16 // 256起始位置，2边框，16白边切除的补偿
+      }px;
         transform:translate(${containerPos.top}px,${containerPos.left}px);
         cursor:${cursorMap[Array.from(dragState.keys())[0]]};
         width:${size.width}px;
         height:${size.height}px`
     })
     const colorLayerStyle = computed(() => {
-      return `background: rgba(${num2color(darkMode.value ? 0 : 0xffffff)}, 0.4)`
+      return `background: rgba(${num2color(
+        darkMode.value ? 0 : 0xffffff
+      )}, 0.4)`
     })
     onMounted(() => {
       addCallBack('mousemove', onMouseMove)
@@ -134,16 +135,13 @@ export default defineComponent({
   left: 256px;
   background: inherit;
   overflow: hidden;
-  border: 1px solid transparent;
-  &:hover {
-    border: 1px solid #1890ff;
-  }
+  border: 2px solid white;
   .blur-layer {
     position: relative;
-    top: -25%; // 把虚化位置移到中间
-    left: -25%;
-    width: 150%;
-    height: 150%;
+    top: -16px;
+    left: -16px;
+    width: calc(100% + 32px);
+    height: calc(100% + 32px);
     background: inherit;
     filter: blur(12px);
     * {
@@ -154,6 +152,7 @@ export default defineComponent({
       background: rgba(255, 255, 255, 0.6);
     }
   }
+
   .content {
     padding: 16px;
     position: absolute;
@@ -161,7 +160,7 @@ export default defineComponent({
     left: 0;
     width: 100%;
     height: 100%;
-    word-break:normal;
+    word-break: normal;
     z-index: 3;
     box-sizing: border-box;
   }
