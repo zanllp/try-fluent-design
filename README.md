@@ -4,6 +4,9 @@
 * 拖拽动态模糊
 * 窗口尺寸改变
 * 暗黑模式
+
+
+![](./doc/layout.png)
 ## Project setup
 ```
 yarn install
@@ -27,3 +30,4 @@ yarn lint
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 # try-fluent-design
+

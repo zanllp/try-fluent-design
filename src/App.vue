@@ -1,6 +1,5 @@
-/* eslint-disable vue/custom-event-name-casing */
 <template>
-  <div class="block-container" ref="selfRef"  id="bg">
+  <div class="block-container" ref="selfRef"  id="bg" @mousemove="onMouseMove">
     <window />
   </div>
 </template>
@@ -8,6 +7,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import window from './components/window.vue'
+import { getCallBackQuene } from './callbackPoll'
 
 export default defineComponent({
   name: 'App',
@@ -16,9 +16,13 @@ export default defineComponent({
   },
   setup () {
     const selfRef = ref<HTMLDivElement | null>(null)
+    const onMouseMove = (e: MouseEvent) => {
+      getCallBackQuene('mousemove').forEach(cb => cb(e))
+    }
     return {
       window,
-      selfRef
+      selfRef,
+      onMouseMove
     }
   }
 })

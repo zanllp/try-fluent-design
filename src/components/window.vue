@@ -4,16 +4,24 @@
     :style="style"
     @mousedown.left="dragState.add('start')"
     @mouseup.left="dragState.clear()"
-    @mousemove="onMouseMove"
-    @mouseleave="dragState.clear()"
+    @mouseleave="(!dragState.has('resize')) && dragState.clear()"
   >
     <div ref="containerRef" class="blur-layer">
-      <div class="color-layer" :style="colorLayerStyle"></div>
+      <div class="color-layer" :style="colorLayerStyle">
+
+      <div class="noise-layer" :style="colorLayerStyle"></div>
+      </div>
     </div>
-    <div class="content">
+    <div class="content" :style="`color:${darkMode?'white':'black'}`">
       {{info}}
-      <span :style="`color:${darkMode?'white':'black'}`">暗黑模式</span>
-      <input type="checkbox" v-model="darkMode">
+      <span>暗黑模式</span>
+      <input type="checkbox" v-model="darkMode" />
+      <h1>Create a responsive layout</h1>
+      <p>
+        For an app to feel natural, it should adapt its layout to different screen sizes and devices.
+        You can use automatic sizing, layout panels, visual states, and even separate UI definitions
+        in XAML to create a responsive UI.
+      </p>
     </div>
   </div>
 </template>
@@ -23,8 +31,10 @@ import {
   SetupContext,
   reactive,
   ref,
-  computed
+  computed,
+  onMounted
 } from 'vue'
+import { addCallBack } from '@/callbackPoll'
 type IContext = {} & SetupContext
 
 export const num2color = (c: number) => {
@@ -43,7 +53,7 @@ export default defineComponent({
   setup (_, _ctx) {
     const ctx = _ctx as IContext
     const containerPos = reactive({ top: 0, left: 0 })
-    const size = reactive({ width: 256, height: 256 })
+    const size = reactive({ width: 512, height: 256 })
     const backgroundPos = reactive({ top: 0, left: 0 })
     const containerRef = ref<HTMLDivElement | null>(null)
     const darkMode = ref(false)
@@ -90,9 +100,9 @@ export default defineComponent({
         resize: 'nwse-resize'
       }
       return `
-        background-position:${-(containerPos.top + 250)}px ${-(
-        containerPos.left + 250
-      )}px;
+        background-position:${-(containerPos.top + 256)}px ${-(
+          containerPos.left + 256
+        )}px;
         transform:translate(${containerPos.top}px,${containerPos.left}px);
         cursor:${cursorMap[Array.from(dragState.keys())[0]]};
         width:${size.width}px;
@@ -101,10 +111,12 @@ export default defineComponent({
     const colorLayerStyle = computed(() => {
       return `background: rgba(${num2color(darkMode.value ? 0 : 0xffffff)}, 0.4)`
     })
+    onMounted(() => {
+      addCallBack('mousemove', onMouseMove)
+    })
     return {
       backgroundPos,
       containerRef,
-      onMouseMove,
       info,
       style,
       dragState,
@@ -116,6 +128,7 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 .container-wrap {
+  user-select: none;
   position: fixed;
   top: 256px;
   left: 256px;
@@ -125,7 +138,6 @@ export default defineComponent({
   &:hover {
     border: 1px solid #1890ff;
   }
-
   .blur-layer {
     position: relative;
     top: -25%; // 把虚化位置移到中间
@@ -149,7 +161,9 @@ export default defineComponent({
     left: 0;
     width: 100%;
     height: 100%;
-    word-break: break-all;
+    word-break:normal;
+    z-index: 3;
+    box-sizing: border-box;
   }
 }
 </style>
