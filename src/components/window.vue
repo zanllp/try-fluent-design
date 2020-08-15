@@ -6,21 +6,13 @@
     @mouseup.left="dragState.clear()"
     @mouseleave="(!dragState.has('resize')) && dragState.clear()"
   >
-    <div ref="containerRef" class="blur-layer">
+    <div class="blur-layer" ref="containerRef">
       <div class="color-layer" :style="colorLayerStyle">
-        <div class="noise-layer" :style="colorLayerStyle"></div>
+        <div class="noise-layer"></div>
       </div>
     </div>
     <div class="content" :style="`color:${darkMode?'white':'black'}`">
-      {{info}}
-      <span>暗黑模式</span>
-      <input type="checkbox" v-model="darkMode" />
-      <h1>Create a responsive layout</h1>
-      <p>
-        For an app to feel natural, it should adapt its layout to different screen sizes and devices.
-        You can use automatic sizing, layout panels, visual states, and even separate UI definitions
-        in XAML to create a responsive UI.
-      </p>
+      <slot></slot>
     </div>
   </div>
 </template>
@@ -31,35 +23,38 @@ import {
   reactive,
   ref,
   computed,
-  onMounted
+  onMounted,
+  toRef
 } from 'vue'
 import { addCallBack } from '@/callbackPoll'
+import { sharedState } from '../store'
+import { num2color } from '@/util'
 type IContext = {} & SetupContext
-
-export const num2color = (c: number) => {
-  const r = c >> 16
-  const g = (c >> 8) & 0xff
-  const b = c & 0xff
-  return [r, g, b]
+type IProps = {
+  initPos: {
+    top: number;
+    left: number;
+  };
 }
-
 export default defineComponent({
   props: {
-    config: {
-      type: Object
+    initPos: {
+      type: Object,
+      default: () => ({
+        top: 256,
+        left: 256
+      })
     }
   },
-  setup (_, _ctx) {
-    const ctx = _ctx as IContext
+  setup (props) {
+    const p = props as IProps
+    const { initPos } = p
     const containerPos = reactive({ top: 0, left: 0 })
     const size = reactive({ width: 512, height: 256 })
     const backgroundPos = reactive({ top: 0, left: 0 })
     const containerRef = ref<HTMLDivElement | null>(null)
-    const darkMode = ref(false)
     type stateType = 'start' | 'resize'
-    const color = ref(num2color(0x1890ff))
     const dragState = reactive(new Set<stateType>())
-    const info = ref('')
     const stateStack = new Array<Array<stateType>>()
     const onMouseMove = (e: MouseEvent) => {
       if (dragState.has('start')) {
@@ -71,12 +66,11 @@ export default defineComponent({
           containerPos.left += e.movementY
         }
       }
-      // 256是窗口的起始位置
       if (
-        containerPos.top + 256 + size.width - e.pageX > 0 &&
-        containerPos.top + 256 + size.width - e.pageX < 16 &&
-        containerPos.left + 256 + size.height - e.pageY > 0 &&
-        containerPos.left + 256 + size.height - e.pageY < 16
+        containerPos.top + initPos.top + size.width - e.pageX > 0 &&
+        containerPos.top + initPos.top + size.width - e.pageX < 16 &&
+        containerPos.left + initPos.left + size.height - e.pageY > 0 &&
+        containerPos.left + initPos.left + size.height - e.pageY < 16
       ) {
         if (!dragState.has('resize')) {
           stateStack.push(Array.from(dragState))
@@ -98,31 +92,35 @@ export default defineComponent({
         start: 'move',
         resize: 'nwse-resize'
       }
+      const bgPos = {
+        // 2边框，16白边切除的补偿
+        top: -containerPos.top - initPos.top - 2 + 16,
+        left: -containerPos.left - initPos.left - 2 + 16
+      }
       return `
-        background-position:${-containerPos.top - 256 - 2 + 16}px ${
-        -containerPos.left - 256 - 2 + 16 // 256起始位置，2边框，16白边切除的补偿
-      }px;
+        background-position:${bgPos.top}px ${bgPos.left}px;
         transform:translate(${containerPos.top}px,${containerPos.left}px);
         cursor:${cursorMap[Array.from(dragState.keys())[0]]};
         width:${size.width}px;
-        height:${size.height}px`
-    })
-    const colorLayerStyle = computed(() => {
-      return `background: rgba(${num2color(
-        darkMode.value ? 0 : 0xffffff
-      )}, 0.4)`
+        height:${size.height}px;
+        top:${initPos.top}px;
+        left:${initPos.left}px;`
     })
     onMounted(() => {
       addCallBack('mousemove', onMouseMove)
     })
+    const colorLayerStyle = computed(() => {
+      return `background: rgba(${num2color(
+        sharedState.darkMode ? 0 : 0xffffff
+      )}, 0.4)`
+    })
     return {
       backgroundPos,
       containerRef,
-      info,
       style,
       dragState,
       colorLayerStyle,
-      darkMode
+      darkMode: toRef(sharedState, 'darkMode')
     }
   }
 })
@@ -131,8 +129,6 @@ export default defineComponent({
 .container-wrap {
   user-select: none;
   position: fixed;
-  top: 256px;
-  left: 256px;
   background: inherit;
   overflow: hidden;
   border: 2px solid white;
