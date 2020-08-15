@@ -1,31 +1,12 @@
 # fluent-design
-尝试在web前端实现流畅设计
-### 已实现
+尝试在web前端实现流畅设计，持续开发中，诈尸式更新
+## 部分特性
 * 拖拽动态模糊
 * 窗口尺寸改变
 * 暗黑模式
-
-## Project setup
-```
-yarn install
-```
-
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
-
-### Compiles and minifies for production
-```
-yarn build
-```
-
-### Lints and fixes files
-```
-yarn lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
-# try-fluent-design
-
+## 即将增加特性
+* 探照灯
+## 相对于uwp流畅设计的主要区别
+* 没有噪声层
+## 预览
+* 通过右侧about的链接进入
