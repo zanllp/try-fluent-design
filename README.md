@@ -5,8 +5,6 @@
 * 窗口尺寸改变
 * 暗黑模式
 
-
-![](./doc/layout.png)
 ## Project setup
 ```
 yarn install
