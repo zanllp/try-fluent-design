@@ -2,11 +2,11 @@
   <div
     class="container-wrap"
     :style="style"
-    @mousedown.left="dragState.add('start')"
-    @mouseup.left="dragState.clear()"
-    @mouseleave="(!dragState.has('resize')) && dragState.clear()"
+    @mousedown.left="control"
+    @mouseup.left="release"
+    @mouseleave="release"
   >
-    <div class="blur-layer" ref="containerRef">
+    <div class="blur-layer" >
       <div class="color-layer" :style="colorLayerStyle">
         <div class="noise-layer"></div>
       </div>
@@ -20,8 +20,6 @@
 import {
   defineComponent,
   SetupContext,
-  reactive,
-  ref,
   computed,
   onMounted,
   toRef
@@ -29,6 +27,7 @@ import {
 import { addCallBack } from '@/callbackPoll'
 import { sharedState } from '../store'
 import { num2color } from '@/util'
+import { useWindowWrapStyle, useMouseMoveControl, useInitState, useControl } from './window'
 type IContext = {} & SetupContext
 type IProps = {
   initPos: {
@@ -49,63 +48,21 @@ export default defineComponent({
   setup (props) {
     const p = props as IProps
     const { initPos } = p
-    const containerPos = reactive({ top: 0, left: 0 })
-    const size = reactive({ width: 512, height: 256 })
-    const backgroundPos = reactive({ top: 0, left: 0 })
-    const containerRef = ref<HTMLDivElement | null>(null)
-    type stateType = 'start' | 'resize'
-    const dragState = reactive(new Set<stateType>())
-    const stateStack = new Array<Array<stateType>>()
-    const onMouseMove = (e: MouseEvent) => {
-      if (dragState.has('start')) {
-        if (dragState.has('resize')) {
-          size.width += e.movementX
-          size.height += e.movementY
-        } else {
-          containerPos.top += e.movementX
-          containerPos.left += e.movementY
-        }
-      }
-      if (
-        containerPos.top + initPos.top + size.width - e.pageX > 0 &&
-        containerPos.top + initPos.top + size.width - e.pageX < 16 &&
-        containerPos.left + initPos.left + size.height - e.pageY > 0 &&
-        containerPos.left + initPos.left + size.height - e.pageY < 16
-      ) {
-        if (!dragState.has('resize')) {
-          stateStack.push(Array.from(dragState))
-        }
-        dragState.add('resize')
-      } else {
-        let lastState = stateStack.pop()
-        while (lastState && lastState.includes('resize')) {
-          lastState = stateStack.pop()
-        }
-        if (lastState) {
-          dragState.clear()
-          lastState.forEach((state) => dragState.add(state))
-        }
+    const state = useInitState(initPos)
+    const onMouseMove = useMouseMoveControl(state)
+    const control = useControl(state)
+    const release = (e: MouseEvent) => {
+      const { type } = e
+      switch (type) {
+        case 'mouseleave':
+          !state.flagSet.has('resize') && state.flagSet.clear()
+          break
+        case 'mouseup':
+          state.flagSet.clear()
+          break
       }
     }
-    const style = computed(() => {
-      const cursorMap: { [k in stateType]: string } = {
-        start: 'move',
-        resize: 'nwse-resize'
-      }
-      const bgPos = {
-        // 2边框，16白边切除的补偿
-        top: -containerPos.top - initPos.top - 2 + 16,
-        left: -containerPos.left - initPos.left - 2 + 16
-      }
-      return `
-        background-position:${bgPos.top}px ${bgPos.left}px;
-        transform:translate(${containerPos.top}px,${containerPos.left}px);
-        cursor:${cursorMap[Array.from(dragState.keys())[0]]};
-        width:${size.width}px;
-        height:${size.height}px;
-        top:${initPos.top}px;
-        left:${initPos.left}px;`
-    })
+    const { style } = useWindowWrapStyle(state)
     onMounted(() => {
       addCallBack('mousemove', onMouseMove)
     })
@@ -115,11 +72,10 @@ export default defineComponent({
       )}, 0.4)`
     })
     return {
-      backgroundPos,
-      containerRef,
       style,
-      dragState,
       colorLayerStyle,
+      release,
+      control,
       darkMode: toRef(sharedState, 'darkMode')
     }
   }

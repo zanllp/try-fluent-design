@@ -3,7 +3,7 @@
     <window v-for="window in windows" :key="window.i" :init-pos="window">
       <span>暗黑模式</span>
       <input type="checkbox" v-model="darkMode" />
-      <h1>Create a responsive layout</h1>
+      <h1>Create a responsive layout-{{window.i + 1}}</h1>
       <p>
         For an app to feel natural, it should adapt its layout to different screen sizes and devices.
         You can use automatic sizing, layout panels, visual states, and even separate UI definitions
@@ -31,11 +31,11 @@ export default defineComponent({
     }
     const windows = reactive(new Array<{ top: number; left: number; i: number }>(3))
     for (let i = 0; i < windows.length; i++) {
-      windows[i] = {
+      windows[i] = ({
         top: 256 + i * 72,
         left: 256 + i * 72,
         i
-      }
+      })
     }
     return {
       window,
