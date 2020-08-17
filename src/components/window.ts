@@ -1,7 +1,7 @@
 import { computed, reactive } from 'vue'
 
-export type State = 'start' | 'resize';
-const cursorMap: { [k in State]: string } = {
+export type StateFlag = 'start' | 'resize';
+const cursorMap: { [k in StateFlag]: string } = {
   start: 'move',
   resize: 'nwse-resize'
 }
@@ -13,7 +13,7 @@ export const useInitState = (initPos: Pos) => {
     size: { width: 512, height: 256 },
     zIndex: 0,
     backgroundPos: { top: 0, left: 0 },
-    flagSet: new Set<State>(),
+    flagSet: new Set<StateFlag>(),
     initPos
   })
 }
@@ -40,19 +40,21 @@ export const useWindowWrapStyle = (state: windowState) => {
     style
   }
 }
-let maxZIndex = 0
+let maxZIndex = 1
 export const useControl = (state: windowState) => {
   return (e: MouseEvent) => {
     state.flagSet.add('start')
-    state.zIndex = maxZIndex + 1 // 让点击到窗口保持在最上层
-    maxZIndex++
+    if (state.zIndex !== maxZIndex) {
+      state.zIndex = maxZIndex + 1 // 让点击到窗口保持在最上层
+      maxZIndex = state.zIndex
+    }
   }
 }
 /**
  * 窗口移动和组件重置
  */
 export const useMouseMoveControl = (state: windowState) => {
-  const stateStack = new Array<Array<State>>()
+  const stateStack = new Array<Array<StateFlag>>()
   const s = state
   return (e: MouseEvent) => {
     if (s.flagSet.has('start')) {

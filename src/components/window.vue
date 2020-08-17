@@ -49,7 +49,6 @@ export default defineComponent({
     const p = props as IProps
     const { initPos } = p
     const state = useInitState(initPos)
-    const onMouseMove = useMouseMoveControl(state)
     const control = useControl(state)
     const release = (e: MouseEvent) => {
       const { type } = e
@@ -64,7 +63,7 @@ export default defineComponent({
     }
     const { style } = useWindowWrapStyle(state)
     onMounted(() => {
-      addCallBack('mousemove', onMouseMove)
+      addCallBack('mousemove', useMouseMoveControl(state))
     })
     const colorLayerStyle = computed(() => {
       return `background: rgba(${num2color(
@@ -87,7 +86,7 @@ export default defineComponent({
   position: fixed;
   background: inherit;
   overflow: hidden;
-  border: 2px solid white;
+  border: 2px solid #aaa;
   .blur-layer {
     position: relative;
     top: -16px;
