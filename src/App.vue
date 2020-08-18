@@ -15,15 +15,11 @@
 
 <script lang="ts">
 import { defineComponent, ref, toRef, reactive } from 'vue'
-import window from './components/window.vue'
 import { getCallBackQuene } from './callbackPoll'
 import { sharedState } from './store'
 
 export default defineComponent({
   name: 'App',
-  components: {
-    window
-  },
   setup () {
     const selfRef = ref<HTMLDivElement | null>(null)
     const onMouseMove = (e: MouseEvent) => {
