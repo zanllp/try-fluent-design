@@ -6,7 +6,7 @@
     @mouseup.left="release"
     @mouseleave="release"
   >
-    <div class="blur-layer" >
+    <div class="blur-layer">
       <div class="color-layer" :style="colorLayerStyle">
         <div class="noise-layer"></div>
       </div>
@@ -17,17 +17,16 @@
   </div>
 </template>
 <script lang="ts">
-import {
-  defineComponent,
-  SetupContext,
-  computed,
-  onMounted,
-  toRef
-} from 'vue'
+import { defineComponent, SetupContext, computed, onMounted, toRef } from 'vue'
 import { addCallBack } from '@/callbackPoll'
 import { sharedState } from '../store'
 import { num2color } from '@/util'
-import { useWindowWrapStyle, useMouseMoveControl, useInitState, useControl } from './window'
+import {
+  useWindowWrapStyle,
+  useMouseMoveControl,
+  useInitState,
+  useControl
+} from './window'
 type IContext = {} & SetupContext
 type IProps = {
   initPos: {
