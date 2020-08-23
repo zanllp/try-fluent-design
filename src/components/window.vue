@@ -17,7 +17,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, SetupContext, computed, onMounted, toRef } from 'vue'
+import { defineComponent, SetupContext, computed, onMounted, toRef, provide } from 'vue'
 import { addCallBack } from '@/callbackPoll'
 import { sharedState } from '../store'
 import { num2color } from '@/util'
@@ -64,6 +64,7 @@ export default defineComponent({
     onMounted(() => {
       addCallBack('mousemove', useMouseMoveControl(state))
     })
+    provide('window-size', state.size)
     const colorLayerStyle = computed(() => {
       return `background: rgba(${num2color(
         sharedState.darkMode ? 0 : 0xffffff

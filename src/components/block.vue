@@ -1,13 +1,34 @@
 <template>
-  <div class="block"><slot></slot></div>
+  <div class="block" :style="style"><slot></slot></div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, reactive, onMounted, inject, computed } from 'vue'
 
 export default defineComponent({
-  setup () {
-    return {}
+  name: 'block',
+  props: {
+    value: {
+      type: String
+    },
+    rectInit: {
+      default: () => ({
+        width: 24,
+        height: 24
+      })
+    }
+  },
+  setup (props) {
+    const rect = reactive(props.rectInit)
+    const style = computed(() => `width:${rect.width}px;height:${rect.height}px;`)
+    onMounted(() => {
+      const regist = inject<(state: any) => void>('regist-block')
+      regist && regist({ rect, value: props.value })
+    })
+    return {
+      rect,
+      style
+    }
   }
 })
 </script>
@@ -15,8 +36,6 @@ export default defineComponent({
 <style lang="scss" scoped>
 .block {
   display: inline-block;
-  width: 24px;
-  height: 24px;
   border: 2px solid white;
   margin: 2px;
   line-height: 24px;
