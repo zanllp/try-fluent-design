@@ -10,7 +10,7 @@
         in XAML to create a responsive UI.
       </p>
     </window>
-    <window>
+    <window :init-pos="{ top: 512, left: 480 }">
       <block-container>
         <block v-for="block in blocks" :key="block" :value="block">
           {{block}}

@@ -4,6 +4,7 @@
 
 <script lang="ts">
 import { defineComponent, reactive, onMounted, inject, computed } from 'vue'
+import { BlockState } from '@/util'
 
 export default defineComponent({
   name: 'block',
@@ -22,7 +23,7 @@ export default defineComponent({
     const rect = reactive(props.rectInit)
     const style = computed(() => `width:${rect.width}px;height:${rect.height}px;`)
     onMounted(() => {
-      const regist = inject<(state: any) => void>('regist-block')
+      const regist = inject<(state: BlockState) => void>('regist-block')
       regist && regist({ rect, value: props.value })
     })
     return {
@@ -36,7 +37,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .block {
   display: inline-block;
-  border: 2px solid white;
+  border: 2px solid transparent;
   margin: 2px;
   line-height: 24px;
   text-align: center;
