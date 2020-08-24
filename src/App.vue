@@ -1,5 +1,5 @@
 <template>
-  <div class="block-container" ref="selfRef" id="bg" @mousemove="onMouseMove">
+  <div class="window-container" ref="selfRef" id="bg" @mousemove="onMouseMove">
     <window v-for="window in windows" :key="window.i" :init-pos="window">
       <span>暗黑模式</span>
       <input type="checkbox" v-model="darkMode" />
@@ -10,6 +10,17 @@
         in XAML to create a responsive UI.
       </p>
     </window>
+    <window :init-pos="{ top: 512, left: 480 }">
+      <block-container>
+        <block v-for="block in blocks" :key="block" :value="block">
+          {{block}}
+        </block>
+        <block v-for="block in blocks" :key="block" :value="block">
+          {{block}}
+        </block>
+        <block>1</block>
+      </block-container>
+    </window>
   </div>
 </template>
 
@@ -17,50 +28,51 @@
 import { defineComponent, ref, toRef, reactive } from 'vue'
 import { getCallBackQuene } from './callbackPoll'
 import { sharedState } from './store'
+import blockContainer from '@/components/block-container.vue'
+import block from './components/block.vue'
 
 export default defineComponent({
+  components: {
+    blockContainer,
+    block
+  },
   name: 'App',
   setup () {
     const selfRef = ref<HTMLDivElement | null>(null)
     const onMouseMove = (e: MouseEvent) => {
       getCallBackQuene('mousemove').forEach((cb) => cb(e))
     }
-    const windows = reactive(new Array<{ top: number; left: number; i: number }>(3))
-    for (let i = 0; i < windows.length; i++) {
-      windows[i] = ({
+    const windows = reactive(
+      Array(3).fill(null).map((_, i) => ({
         top: 256 + i * 72,
         left: 256 + i * 72,
         i
-      })
-    }
+      }))
+    )
+    const blocks = reactive(Array(26).fill(null).map((_, idx) => String.fromCharCode(65 + idx)))
     return {
       window,
       selfRef,
       onMouseMove,
       darkMode: toRef(sharedState, 'darkMode'),
-      windows
+      windows,
+      blocks
     }
   }
 })
 </script>
 
 <style lang="scss">
-.block-container {
+.window-container {
   background-image: url('./assets/sion.jpg');
   background-size: 100vw;
   margin: 0;
-}
-.block-container {
   width: 100vw;
   height: 100vh;
   overflow: auto;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-content: center;
-  flex-wrap: wrap;
   padding: 128px;
   box-sizing: border-box;
+  border-image-p
   .block {
     margin: 8px;
   }

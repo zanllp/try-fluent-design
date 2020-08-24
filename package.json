@@ -9,7 +9,9 @@
     "lint fix": "vue-cli-service lint --fix"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.159",
     "core-js": "^3.6.5",
+    "lodash": "^4.17.20",
     "vue": "^3.0.0-0"
   },
   "devDependencies": {

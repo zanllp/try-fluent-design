@@ -4,3 +4,11 @@ export const num2color = (c: number) => {
   const b = c & 0xff
   return [r, g, b]
 }
+export type BlockState = {
+  value?: string;
+  rect: {
+    height: number;
+    width: number;
+  };
+}
+export type Size = BlockState['rect']
