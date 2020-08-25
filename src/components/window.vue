@@ -23,10 +23,10 @@ import { sharedState } from '../store'
 import { num2color } from '@/util'
 import {
   useWindowWrapStyle,
-  useMouseMoveControl,
   useInitState,
-  useControl
+  useWindowControl
 } from './window'
+import { map } from 'lodash'
 type IContext = {} & SetupContext
 type IProps = {
   initPos: {
@@ -48,21 +48,10 @@ export default defineComponent({
     const p = props as IProps
     const { initPos } = p
     const state = useInitState(initPos)
-    const control = useControl(state)
-    const release = (e: MouseEvent) => {
-      const { type } = e
-      switch (type) {
-        case 'mouseleave':
-          !state.flagSet.has('resize') && state.flagSet.clear()
-          break
-        case 'mouseup':
-          state.flagSet.clear()
-          break
-      }
-    }
     const { style } = useWindowWrapStyle(state)
+    const { move, control, release } = useWindowControl(state)
     onMounted(() => {
-      addCallBack('mousemove', useMouseMoveControl(state))
+      addCallBack('mousemove', move)
     })
     provide('window-size', state.size)
     const colorLayerStyle = computed(() => {

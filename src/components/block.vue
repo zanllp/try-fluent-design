@@ -12,15 +12,17 @@ export default defineComponent({
     value: {
       type: String
     },
-    rectInit: {
-      default: () => ({
-        width: 24,
-        height: 24
-      })
+    width: {
+      type: Number,
+      default: 24
+    },
+    height: {
+      type: Number,
+      default: 24
     }
   },
   setup (props) {
-    const rect = reactive(props.rectInit)
+    const rect = reactive({ width: props.width, height: props.height })
     const style = computed(() => `width:${rect.width}px;height:${rect.height}px;`)
     onMounted(() => {
       const regist = inject<(state: BlockState) => void>('regist-block')
@@ -35,11 +37,15 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.block-wrap{
+  display: inline-block;
+}
 .block {
   display: inline-block;
   border: 2px solid transparent;
   margin: 2px;
   line-height: 24px;
   text-align: center;
+  vertical-align: top;
 }
 </style>

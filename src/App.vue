@@ -19,6 +19,7 @@
           {{block}}
         </block>
         <block>1</block>
+        <block :width="120" style="cursor:pointer;">hello world</block>
       </block-container>
     </window>
   </div>
@@ -72,9 +73,5 @@ export default defineComponent({
   overflow: auto;
   padding: 128px;
   box-sizing: border-box;
-  border-image-p
-  .block {
-    margin: 8px;
-  }
 }
 </style>

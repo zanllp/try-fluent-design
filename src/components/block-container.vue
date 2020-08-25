@@ -1,5 +1,5 @@
 <template>
-  <div class="block-container">
+  <div class="block-container" @mousemove="control" @mouseleave="release">
     <slot></slot>
     <svg
       class="svg-mask"
@@ -8,8 +8,6 @@
       xmlns:xlink="http://www.w3.org/1999/xlink"
       :viewBox="`0 0 ${windowSize.width - 32} ${windowSize.height - 32}`"
       ref="svgRef"
-      @mousemove="control"
-      @mouseleave="release"
     >
       <defs>
         <radialGradient id="Gradient" :cx="svgCursorPercent.x" :cy="svgCursorPercent.y" r="0.2">
@@ -171,9 +169,8 @@ export default defineComponent({
 <style lang="scss" scoped>
 .block-container {
   position: relative;
-  background-size: 64px;
-  background-repeat: no-repeat;
   .svg-mask {
+    pointer-events: none;
     position: absolute;
     top: 0;
     left: 0;

@@ -1,15 +1,14 @@
 import { computed, reactive } from 'vue'
 
-export type StateFlag = 'start' | 'resize';
+export type StateFlag = 'start' | 'resize'
 const cursorMap: { [k in StateFlag]: string } = {
   start: 'move',
   resize: 'nwse-resize'
 }
-type Pos = { top: number; left: number };
-type Size = { width: number; height: number };
+type Pos = { top: number; left: number }
 export const useInitState = (initPos: Pos) => {
   return reactive({
-    containerPos: { top: 0, left: 0 },
+    offset: { top: 0, left: 0 },
     size: { width: 512, height: 256 },
     zIndex: 0,
     backgroundPos: { top: 0, left: 0 },
@@ -23,12 +22,12 @@ export const useWindowWrapStyle = (state: windowState) => {
   const style = computed(() => {
     const bgPos = {
       // 2边框，16白边切除的补偿
-      top: -s.containerPos.top - s.initPos.top - 2 + 16,
-      left: -s.containerPos.left - s.initPos.left - 2 + 16
+      top: -s.offset.top - s.initPos.top - 2 + 16,
+      left: -s.offset.left - s.initPos.left - 2 + 16
     }
     return `
           background-position:${bgPos.top}px ${bgPos.left}px;
-          transform:translate(${s.containerPos.top}px,${s.containerPos.left}px);
+          transform:translate(${s.offset.left}px,${s.offset.top}px);
           cursor:${cursorMap[Array.from(s.flagSet.keys())[0]]};
           width:${s.size.width}px;
           height:${s.size.height}px;
@@ -40,51 +39,63 @@ export const useWindowWrapStyle = (state: windowState) => {
     style
   }
 }
-let maxZIndex = 1
-export const useControl = (state: windowState) => {
-  return (e: MouseEvent) => {
+
+/**
+ * 窗口移动和组件重置
+ */
+export const useWindowControl = (state: windowState) => {
+  let maxZIndex = 1
+  const control = (e: MouseEvent) => {
     state.flagSet.add('start')
     if (state.zIndex !== maxZIndex) {
       state.zIndex = maxZIndex + 1 // 让点击到窗口保持在最上层
       maxZIndex = state.zIndex
     }
   }
-}
-/**
- * 窗口移动和组件重置
- */
-export const useMouseMoveControl = (state: windowState) => {
   const stateStack = new Array<Array<StateFlag>>()
   const s = state
-  return (e: MouseEvent) => {
+  const release = (e: MouseEvent) => {
+    const { type } = e
+    switch (type) {
+      case 'mouseleave':
+        !state.flagSet.has('resize') && state.flagSet.clear()
+        break
+      case 'mouseup':
+        state.flagSet.clear()
+        break
+    }
+  }
+  const move = (e: MouseEvent) => {
     if (s.flagSet.has('start')) {
       if (s.flagSet.has('resize')) {
         s.size.width += e.movementX
         s.size.height += e.movementY
       } else {
-        s.containerPos.top += e.movementX
-        s.containerPos.left += e.movementY
+        s.offset.left += e.movementX
+        s.offset.top += e.movementY
       }
     }
-    if (
-      s.containerPos.top + s.initPos.top + s.size.width - e.pageX > 0 &&
-      s.containerPos.top + s.initPos.top + s.size.width - e.pageX < 16 &&
-      s.containerPos.left + s.initPos.left + s.size.height - e.pageY > 0 &&
-      s.containerPos.left + s.initPos.left + s.size.height - e.pageY < 16
-    ) {
-      if (!s.flagSet.has('resize')) {
+    const areaLeft = s.offset.left + s.initPos.left + s.size.width
+    const areaTop = s.offset.top + s.initPos.top + s.size.height
+    const areaSide = 16
+    if (areaLeft - e.pageX > 0 && areaLeft - e.pageX < areaSide && areaTop - e.pageY > 0 && areaTop - e.pageY < areaSide) {
+      if (!s.flagSet.has('resize')) { // 进入重置区域
         stateStack.push(Array.from(s.flagSet))
       }
       s.flagSet.add('resize')
     } else {
-      let lastState = stateStack.pop()
-      while (lastState && lastState.includes('resize')) {
-        lastState = stateStack.pop()
-      }
-      if (lastState) {
-        s.flagSet.clear()
-        lastState.forEach(state => s.flagSet.add(state))
+      if (s.flagSet.has('resize')) {
+        const lastState = stateStack.pop()
+        if (lastState) {
+          s.flagSet.clear()
+          lastState.forEach(state => s.flagSet.add(state))
+        }
       }
     }
+  }
+  return {
+    release,
+    control,
+    move
   }
 }
