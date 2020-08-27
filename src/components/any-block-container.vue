@@ -15,19 +15,17 @@
           <stop offset="100%" stop-color="transparent" />
         </radialGradient>
         <mask id="Mask">
-          <template v-for="(row, idxR) in layout">
-            <template v-for="(item, idxC) in row">
-              <rect
-                :x="idxC * 32 + 2"
-                :y="idxR * 32 + 2"
-                :width="item.rect.width+2"
-                :height="item.rect.aheight+2"
-                :key="item.i"
-                fill="black"
-                stroke="white"
-                stroke-width="2"
-              />
-            </template>
+          <template v-for="item in layout">
+            <rect
+              :x="item.rect.x - 1"
+              :y="item.rect.y - 1"
+              :width="item.rect.width+2"
+              :height="item.rect.height+2"
+              :key="item.i"
+              fill="black"
+              stroke="white"
+              stroke-width="2"
+            />
           </template>
         </mask>
       </defs>
@@ -56,7 +54,7 @@ import {
 } from 'vue'
 import { debounce } from 'lodash'
 import { addCallBack } from '@/callbackPoll'
-import { Size, BlockState } from '@/util'
+import { Size, AnyBlockState } from '@/util'
 
 const useSvg = (windowSize: Ref<Size>) => {
   type state = {
@@ -72,7 +70,6 @@ const useSvg = (windowSize: Ref<Size>) => {
     x: 0,
     y: 0
   })
-  const layout = ref(new Array<Array<BlockState>>())
   const maxSide = computed(() => Math.max(windowSize.value.height - 32, windowSize.value.width - 32))
   type Flag = 'start'
   const svgStateStack = reactive(new Set<Flag>())
@@ -94,23 +91,12 @@ const useSvg = (windowSize: Ref<Size>) => {
       }
     }
   }
-  const blocks = new Array<BlockState>()
-  const reLayout = (val: Size) => {
-    layout.value = blocks.reduce<Array<Array<BlockState>>>(
-      (p, c) => {
-        const rowLine = p.length - 1
-        // 8是2px边框和外边距，32是16px内填充
-        const currLength = p[rowLine].reduce((p, c) => p + c.rect.width + 8, 0) // 最后一行的宽度
-        if (currLength + c.rect.width + 8 > val.width - 32) {
-          // 塞不下，换新的一行
-          return [...p, [c]]
-        }
-        p[rowLine].push(c)
-        return p
-      },
-      [[]]
-    )
-  }
+  const blocks = reactive<AnyBlockState[]>(new Array<AnyBlockState>())
+  const layout = computed(() => {
+    const svg = svgRef.value
+    const rect = svg ? svg.getBoundingClientRect() : { x: 0, y: 0 }
+    return blocks.filter(item => item.rect).map((item, i) => ({ ...item, i, x: item.rect!.x - rect.x, y: item.rect!.y - rect.y }))
+  })
   const isStart = computed(() => svgStateStack.has('start'))
   return {
     layout,
@@ -119,7 +105,6 @@ const useSvg = (windowSize: Ref<Size>) => {
     control,
     release,
     cursorMove,
-    reLayout,
     blocks,
     isStart,
     maxSide
@@ -137,20 +122,13 @@ export default defineComponent({
       control,
       release,
       blocks,
-      reLayout,
       isStart,
       maxSide
     } = useSvg(windowSize)
-    provide('regist-block', (state: BlockState) => blocks.push(state))
+    provide('regist-any-block', (state: AnyBlockState) => blocks.push(state as any))
     onMounted(() => {
       windowSize.value = inject('window-size', initSize)
       addCallBack('mousemove', cursorMove)
-      if (windowSize.value) {
-        watch(() => windowSize.value, debounce(reLayout, 300), {
-          deep: true,
-          immediate: true
-        })
-      }
     })
     return {
       layout,

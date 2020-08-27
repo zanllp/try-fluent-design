@@ -1,3 +1,5 @@
+import { Ref } from 'vue'
+
 export const num2color = (c: number) => {
   const r = c >> 16
   const g = (c >> 8) & 0xff
@@ -12,3 +14,7 @@ export type BlockState = {
   };
 }
 export type Size = BlockState['rect']
+export type AnyBlockState = {
+  value?: string;
+  rect: Ref<DOMRect|null>;
+}
