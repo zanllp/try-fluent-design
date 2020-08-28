@@ -11,16 +11,16 @@
       </p>
     </window>
     <window :init-pos="{ top: 512, left: 480 }">
-      <any-block-container>
-        <any-block v-for="block in blocks" :key="block" :value="block">
+      <block-container>
+        <block v-for="block in blocks" :key="block" :value="block" style="padding:4px;">
           {{block}}
-        </any-block>
-        <any-block v-for="block in blocks" :key="block" :value="block">
+        </block>
+        <block v-for="block in blocks" :key="block" :value="block" style="margin:4px;">
           {{block}}
-        </any-block>
-        <any-block>1</any-block>
-        <any-block style="cursor:pointer;">hello world</any-block>
-      </any-block-container>
+        </block>
+        <block>1</block>
+        <block style="cursor:pointer;">hello world</block>
+      </block-container>
     </window>
   </div>
 </template>
@@ -29,18 +29,8 @@
 import { defineComponent, ref, toRef, reactive } from 'vue'
 import { getCallBackQuene } from './callbackPoll'
 import { sharedState } from './store'
-import blockContainer from '@/components/block-container.vue'
-import block from './components/block.vue'
-import anyBlock from './components/any-block.vue'
-import anyBlockContainer from './components/any-block-container.vue'
 
 export default defineComponent({
-  components: {
-    // blockContainer,
-    // block,
-    anyBlockContainer,
-    anyBlock
-  },
   name: 'App',
   setup () {
     const selfRef = ref<HTMLDivElement | null>(null)
@@ -69,7 +59,7 @@ export default defineComponent({
 
 <style lang="scss">
 .window-container {
-  // background-image: url('./assets/sion.jpg');
+  background-image: url('./assets/sion.jpg');
   background-size: 100vw;
   margin: 0;
   width: 100vw;

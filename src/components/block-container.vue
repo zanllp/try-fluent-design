@@ -10,24 +10,22 @@
       ref="svgRef"
     >
       <defs>
-        <radialGradient id="Gradient" :cx="svgCursorPercent.x" :cy="svgCursorPercent.y" r="0.2">
+        <radialGradient :id="`Gradient-${id}`" :cx="svgCursorPercent.x" :cy="svgCursorPercent.y" r="0.2">
           <stop offset="0%" stop-color="white" />
           <stop offset="100%" stop-color="transparent" />
         </radialGradient>
-        <mask id="Mask">
-          <template v-for="(row, idxR) in layout">
-            <template v-for="(item, idxC) in row">
-              <rect
-                :x="idxC * 32 + 2"
-                :y="idxR * 32 + 2"
-                :width="item.rect.width+2"
-                :height="item.rect.aheight+2"
-                :key="item.i"
-                fill="black"
-                stroke="white"
-                stroke-width="2"
-              />
-            </template>
+        <mask :id="`Mask-${id}`">
+          <template v-for="item in layout">
+            <rect
+              :x="item.x"
+              :y="item.y"
+              :width="item.width"
+              :height="item.height"
+              :key="item.i"
+              fill="black"
+              stroke="white"
+              stroke-width="2"
+            />
           </template>
         </mask>
       </defs>
@@ -36,13 +34,15 @@
         y="0"
         :width="maxSide"
         :height="maxSide"
-        :fill="isStart?'url(\'#Gradient\')':'transparent'"
-        :mask="isStart?'url(\'#Mask\')':undefined"
+        :fill="isStart?`url(\'#Gradient-${id}\')`:'transparent'"
+        :mask="isStart?`url(\'#Mask-${id}\')`:undefined"
       />
     </svg>
   </div>
 </template>
 <script lang="tsx">
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 import {
   defineComponent,
   ref,
@@ -56,7 +56,7 @@ import {
 } from 'vue'
 import { debounce } from 'lodash'
 import { addCallBack } from '@/callbackPoll'
-import { Size, BlockState } from '@/util'
+import { Size, AnyBlockState, getIncrementId } from '@/util'
 
 const useSvg = (windowSize: Ref<Size>) => {
   type state = {
@@ -68,11 +68,27 @@ const useSvg = (windowSize: Ref<Size>) => {
     i: number;
   }
   const svgRef = ref<SVGElement>()
+  const svgRect = ref<DOMRect>()
+  const svgObserver = {
+    ro: new ResizeObserver(entries => {
+      svgRect.value = entries[0].target.getBoundingClientRect()
+    }),
+    mounted: () => {
+      const dom = svgRef.value
+      if (!dom) {
+        throw new Error('获取svg dom失败!!!')
+      }
+      svgRect.value = dom.getBoundingClientRect()
+      svgObserver.ro.observe(dom)
+    },
+    unmounted: () => {
+      svgObserver.ro.disconnect()
+    }
+  }
   const svgCursorPercent = ref<{ x: number | string; y: number | string }>({
     x: 0,
     y: 0
   })
-  const layout = ref(new Array<Array<BlockState>>())
   const maxSide = computed(() => Math.max(windowSize.value.height - 32, windowSize.value.width - 32))
   type Flag = 'start'
   const svgStateStack = reactive(new Set<Flag>())
@@ -83,9 +99,8 @@ const useSvg = (windowSize: Ref<Size>) => {
     svgStateStack.delete('start')
   }
   const cursorMove = (e: MouseEvent) => {
-    const svg = svgRef.value
-    if (svgStateStack.has('start') && svg) {
-      const rect = svg.getBoundingClientRect()
+    const rect = svgRect.value
+    if (svgStateStack.has('start') && rect) {
       const x = e.x - rect.x
       const y = e.y - rect.y
       svgCursorPercent.value = {
@@ -94,23 +109,20 @@ const useSvg = (windowSize: Ref<Size>) => {
       }
     }
   }
-  const blocks = new Array<BlockState>()
-  const reLayout = (val: Size) => {
-    layout.value = blocks.reduce<Array<Array<BlockState>>>(
-      (p, c) => {
-        const rowLine = p.length - 1
-        // 8是2px边框和外边距，32是16px内填充
-        const currLength = p[rowLine].reduce((p, c) => p + c.rect.width + 8, 0) // 最后一行的宽度
-        if (currLength + c.rect.width + 8 > val.width - 32) {
-          // 塞不下，换新的一行
-          return [...p, [c]]
-        }
-        p[rowLine].push(c)
-        return p
-      },
-      [[]]
-    )
-  }
+  const blocks = reactive(new Array<AnyBlockState>())
+  const layout = computed(() => {
+    const svg = svgRef.value
+    const svgRect = svg ? svg.getBoundingClientRect() : { x: 0, y: 0 }
+    const res = blocks.filter(item => item.rect)
+      .map((item) => ({
+        width: item.rect!.width,
+        height: item.rect!.height,
+        i: item.id,
+        x: item.rect!.x - svgRect.x,
+        y: item.rect!.y - svgRect.y
+      }))
+    return res
+  })
   const isStart = computed(() => svgStateStack.has('start'))
   return {
     layout,
@@ -119,14 +131,43 @@ const useSvg = (windowSize: Ref<Size>) => {
     control,
     release,
     cursorMove,
-    reLayout,
     blocks,
     isStart,
-    maxSide
+    maxSide,
+    svgObserver
+  }
+}
+
+const useProvider = (blocks: Array<AnyBlockState>) => {
+  const idCounter = ref(0)
+  type QueneType = { cb: () => void; id: number }
+  const updateQuene = new Array<QueneType>()
+  provide('regist-any-block', (state: AnyBlockState) => {
+    state.id = ++idCounter.value
+    blocks.push(state)
+    return state.id
+  })
+  provide('update-block-state', (state: AnyBlockState) => {
+    const idx = blocks.findIndex(item => item.id === state.id)
+    if (idx !== -1) {
+      blocks[idx] = state
+    }
+  })
+  provide('on-will-update-rect', (cb: () => void, id: number) => {
+    updateQuene.push({ cb, id })
+  })
+  provide('unmounted-block', (id: number) => {
+    updateQuene.splice(updateQuene.findIndex(item => item.id === id), 1)
+    blocks.splice(blocks.findIndex(item => item.id === id), 1)
+  })
+  return {
+    updateQuene
   }
 }
 export default defineComponent({
+  name: 'blockContainer',
   setup () {
+    const id = getIncrementId('block-container')
     const initSize: Size = { width: 200, height: 200 }
     const windowSize = ref(initSize)
     const {
@@ -137,20 +178,25 @@ export default defineComponent({
       control,
       release,
       blocks,
-      reLayout,
       isStart,
-      maxSide
+      maxSide,
+      svgObserver
     } = useSvg(windowSize)
-    provide('regist-block', (state: BlockState) => blocks.push(state))
+    const { updateQuene } = useProvider(blocks)
     onMounted(() => {
       windowSize.value = inject('window-size', initSize)
-      addCallBack('mousemove', cursorMove)
+      svgObserver.mounted()
       if (windowSize.value) {
-        watch(() => windowSize.value, debounce(reLayout, 300), {
-          deep: true,
-          immediate: true
-        })
+        watch(() => windowSize.value,
+          debounce(() => updateQuene.forEach(val => val.cb()), 300), {
+            deep: true,
+            immediate: true
+          })
       }
+      addCallBack('mousemove', cursorMove)
+    })
+    onMounted(() => {
+      svgObserver.unmounted()
     })
     return {
       layout,
@@ -160,7 +206,8 @@ export default defineComponent({
       release,
       windowSize,
       isStart,
-      maxSide
+      maxSide,
+      id
     }
   }
 })

@@ -26,7 +26,6 @@ import {
   useInitState,
   useWindowControl
 } from './window'
-import { map } from 'lodash'
 type IContext = {} & SetupContext
 type IProps = {
   initPos: {
@@ -35,6 +34,7 @@ type IProps = {
   };
 }
 export default defineComponent({
+  name: 'window',
   props: {
     initPos: {
       type: Object,

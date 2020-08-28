@@ -16,6 +16,7 @@
         "curly":true,
         "no-class-assign":false,
         "semicolon":false,
+        "no-non-null-assertion":false,
         "member-ordering": [
             true,
             {
