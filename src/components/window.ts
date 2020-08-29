@@ -40,14 +40,15 @@ export const useWindowWrapStyle = (state: windowState) => {
   }
 }
 
+let maxZIndex = 1
 /**
  * 窗口移动和组件重置
  */
 export const useWindowControl = (state: windowState) => {
-  let maxZIndex = 1
   const control = (e: MouseEvent) => {
     state.flagSet.add('start')
-    if (state.zIndex !== maxZIndex) {
+    console.info(maxZIndex)
+    if (state.zIndex < maxZIndex) {
       state.zIndex = maxZIndex + 1 // 让点击到窗口保持在最上层
       maxZIndex = state.zIndex
     }
