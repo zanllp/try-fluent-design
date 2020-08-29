@@ -26,7 +26,6 @@ import {
   useInitState,
   useWindowControl
 } from './window'
-import { map } from 'lodash'
 type IContext = {} & SetupContext
 type IProps = {
   initPos: {
@@ -35,6 +34,7 @@ type IProps = {
   };
 }
 export default defineComponent({
+  name: 'window',
   props: {
     initPos: {
       type: Object,
@@ -54,6 +54,7 @@ export default defineComponent({
       addCallBack('mousemove', move)
     })
     provide('window-size', state.size)
+    provide('window-offset', state.offset)
     const colorLayerStyle = computed(() => {
       return `background: rgba(${num2color(
         sharedState.darkMode ? 0 : 0xffffff

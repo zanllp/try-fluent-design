@@ -1,3 +1,5 @@
+import { sharedState } from './store'
+
 export const num2color = (c: number) => {
   const r = c >> 16
   const g = (c >> 8) & 0xff
@@ -12,3 +14,17 @@ export type BlockState = {
   };
 }
 export type Size = BlockState['rect']
+export type AnyBlockState = {
+  value?: string;
+  rect: DOMRect | null;
+  id: number;
+}
+/**
+ * 共享状态里获取一个自增id
+ */
+export const getIncrementId = (type: keyof typeof sharedState.idPool) => {
+  const arr = sharedState.idPool[type]
+  const id = arr.length !== 0 ? arr[arr.length - 1] + 1 : 0
+  arr.push(id)
+  return id
+}

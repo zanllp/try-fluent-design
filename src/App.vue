@@ -12,14 +12,14 @@
     </window>
     <window :init-pos="{ top: 512, left: 480 }">
       <block-container>
-        <block v-for="block in blocks" :key="block" :value="block">
+        <block v-for="block in blocks" :key="block" :value="block" style="padding:4px;">
           {{block}}
         </block>
-        <block v-for="block in blocks" :key="block" :value="block">
+        <block v-for="block in blocks" :key="block" :value="block" style="margin:4px;">
           {{block}}
         </block>
         <block>1</block>
-        <block :width="120" style="cursor:pointer;">hello world</block>
+        <block style="cursor:pointer;">hello world</block>
       </block-container>
     </window>
   </div>
@@ -29,14 +29,8 @@
 import { defineComponent, ref, toRef, reactive } from 'vue'
 import { getCallBackQuene } from './callbackPoll'
 import { sharedState } from './store'
-import blockContainer from '@/components/block-container.vue'
-import block from './components/block.vue'
 
 export default defineComponent({
-  components: {
-    blockContainer,
-    block
-  },
   name: 'App',
   setup () {
     const selfRef = ref<HTMLDivElement | null>(null)
