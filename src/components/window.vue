@@ -54,6 +54,7 @@ export default defineComponent({
       addCallBack('mousemove', move)
     })
     provide('window-size', state.size)
+    provide('window-offset', state.offset)
     const colorLayerStyle = computed(() => {
       return `background: rgba(${num2color(
         sharedState.darkMode ? 0 : 0xffffff

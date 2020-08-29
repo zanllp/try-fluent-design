@@ -58,7 +58,7 @@ import { debounce } from 'lodash'
 import { addCallBack } from '@/callbackPoll'
 import { Size, AnyBlockState, getIncrementId } from '@/util'
 
-const useSvg = (windowSize: Ref<Size>) => {
+const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number;left: number }>) => {
   type state = {
     rect: {
       width: number;
@@ -69,9 +69,10 @@ const useSvg = (windowSize: Ref<Size>) => {
   }
   const svgRef = ref<SVGElement>()
   const svgRect = ref<DOMRect>()
+  // 太麻烦，暂时不用
   const svgObserver = {
-    ro: new ResizeObserver(entries => {
-      svgRect.value = entries[0].target.getBoundingClientRect()
+    ro: new ResizeObserver(_entries => {
+      svgRect.value = svgRef.value!.getBoundingClientRect()
     }),
     mounted: () => {
       const dom = svgRef.value
@@ -80,6 +81,7 @@ const useSvg = (windowSize: Ref<Size>) => {
       }
       svgRect.value = dom.getBoundingClientRect()
       svgObserver.ro.observe(dom)
+      console.log(dom)
     },
     unmounted: () => {
       svgObserver.ro.disconnect()
@@ -99,8 +101,9 @@ const useSvg = (windowSize: Ref<Size>) => {
     svgStateStack.delete('start')
   }
   const cursorMove = (e: MouseEvent) => {
-    const rect = svgRect.value
-    if (svgStateStack.has('start') && rect) {
+    const svg = svgRef.value
+    if (svgStateStack.has('start') && svg) {
+      const rect = svg.getBoundingClientRect()
       const x = e.x - rect.x
       const y = e.y - rect.y
       svgCursorPercent.value = {
@@ -112,14 +115,14 @@ const useSvg = (windowSize: Ref<Size>) => {
   const blocks = reactive(new Array<AnyBlockState>())
   const layout = computed(() => {
     const svg = svgRef.value
-    const svgRect = svg ? svg.getBoundingClientRect() : { x: 0, y: 0 }
+    const rect = svg ? svg.getBoundingClientRect() : { x: 0, y: 0 }
     const res = blocks.filter(item => item.rect)
       .map((item) => ({
         width: item.rect!.width,
         height: item.rect!.height,
         i: item.id,
-        x: item.rect!.x - svgRect.x,
-        y: item.rect!.y - svgRect.y
+        x: item.rect!.x - rect.x,
+        y: item.rect!.y - rect.y
       }))
     return res
   })
@@ -169,7 +172,9 @@ export default defineComponent({
   setup () {
     const id = getIncrementId('block-container')
     const initSize: Size = { width: 200, height: 200 }
+    const initOffset = { top: 0, left: 0 }
     const windowSize = ref(initSize)
+    const windowOffset = ref(initOffset)
     const {
       layout,
       svgCursorPercent,
@@ -181,10 +186,11 @@ export default defineComponent({
       isStart,
       maxSide,
       svgObserver
-    } = useSvg(windowSize)
+    } = useSvg(windowSize, windowOffset)
     const { updateQuene } = useProvider(blocks)
     onMounted(() => {
       windowSize.value = inject('window-size', initSize)
+      windowOffset.value = inject('window-offset', initOffset)
       svgObserver.mounted()
       if (windowSize.value) {
         watch(() => windowSize.value,

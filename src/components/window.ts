@@ -26,7 +26,7 @@ export const useWindowWrapStyle = (state: windowState) => {
       left: -s.offset.left - s.initPos.left - 2 + 16
     }
     return `
-          background-position:${bgPos.top}px ${bgPos.left}px;
+          background-position:${bgPos.left}px ${bgPos.top}px;
           transform:translate(${s.offset.left}px,${s.offset.top}px);
           cursor:${cursorMap[Array.from(s.flagSet.keys())[0]]};
           width:${s.size.width}px;
