@@ -1,5 +1,5 @@
 export type eventType = 'mousemove'
-export type fnType = (e: MouseEvent) => any
+export type fnType = (e: MouseEvent) => void
 const eventPool = new Map<eventType, Array<fnType>>()
 export const addCallBack = (event: eventType, cb: fnType) => {
   const quene = eventPool.get(event)

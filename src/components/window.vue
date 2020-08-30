@@ -17,7 +17,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, SetupContext, computed, onMounted, toRef, provide, inject } from 'vue'
+import { defineComponent, computed, onMounted, toRef, provide, inject } from 'vue'
 import { addCallBack } from '@/callbackPoll'
 import { sharedState } from '../store'
 import { num2color } from '@/util'
@@ -26,28 +26,24 @@ import {
   useInitState,
   useWindowControl
 } from './window'
-type IContext = {} & SetupContext
-type IProps = {
-  initPos: {
-    top: number;
-    left: number;
-  };
-}
+
 export default defineComponent({
   name: 'window',
   props: {
     initPos: {
-      type: Object,
       default: () => ({
         top: 256,
         left: 256
       })
+    },
+    name: {
+      type: String,
+      default: ''
     }
   },
   setup (props) {
-    const p = props as IProps
-    const { initPos } = p
-    const state = useInitState(initPos)
+    const p = props
+    const state = useInitState(p.initPos, p.name)
     const { style } = useWindowWrapStyle(state)
     const { move, control, release } = useWindowControl(state)
     provide('window-size', state.size)

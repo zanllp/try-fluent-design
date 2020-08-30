@@ -6,7 +6,7 @@
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink"
-      :viewBox="`0 0 ${windowSize.width - 32} ${windowSize.height - 32}`"
+      :viewBox="`0 0 ${Math.max(windowSize.width - 32, 0)} ${Math.max(windowSize.height - 32, 0)}`"
       ref="svgRef"
     >
       <defs>
@@ -90,7 +90,7 @@ const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number;left: num
     x: 0,
     y: 0
   })
-  const maxSide = computed(() => Math.max(windowSize.value.height - 32, windowSize.value.width - 32))
+  const maxSide = computed(() => Math.max(windowSize.value.height - 32, windowSize.value.width - 32, 0))
   type Flag = 'start'
   const svgStateStack = reactive(new Set<Flag>())
   const control = () => {
@@ -166,13 +166,13 @@ const useProvider = (blocks: Array<AnyBlockState>) => {
     updateQuene
   }
 }
+
 export default defineComponent({
   name: 'blockContainer',
   setup () {
     const id = getIncrementId('block-container')
-    const initSize: Size = { width: 200, height: 200 }
     const initOffset = { top: 0, left: 0 }
-    const windowSize = ref(initSize)
+    const windowSize = ref({ width: 200, height: 200 })
     const windowOffset = ref(initOffset)
     const {
       layout,
@@ -188,8 +188,15 @@ export default defineComponent({
     } = useSvg(windowSize, windowOffset)
     const { updateQuene } = useProvider(blocks)
     onMounted(() => {
-      windowSize.value = inject('window-size', initSize)
-      windowOffset.value = inject('window-offset', initOffset)
+      const size = inject<Size>('window-size')
+      const offset = inject<typeof initOffset>('window-offset')
+      if (!(size)) {
+        throw new Error('block-container组件必须在window组件的包裹下或手动注入窗口尺寸')
+      }
+      windowSize.value = size
+      if (offset) {
+        windowOffset.value = offset
+      }
       svgObserver.mounted()
       if (windowSize.value) {
         watch(() => windowSize.value,
