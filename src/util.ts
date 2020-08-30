@@ -12,13 +12,13 @@ export type BlockState = {
     height: number;
     width: number;
   };
-}
-export type Size = BlockState['rect']
+};
+export type Size = BlockState['rect'];
 export type AnyBlockState = {
   value?: string;
   rect: DOMRect | null;
   id: number;
-}
+};
 /**
  * 共享状态里获取一个自增id
  */
@@ -27,4 +27,10 @@ export const getIncrementId = (type: keyof typeof sharedState.idPool) => {
   const id = arr.length !== 0 ? arr[arr.length - 1] + 1 : 0
   arr.push(id)
   return id
+}
+
+export const createArray = <T>(num: number, createFn: (index: number) => T) => {
+  return Array(num)
+    .fill(null)
+    .map((_, i) => createFn(i))
 }

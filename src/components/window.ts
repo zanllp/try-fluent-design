@@ -1,4 +1,5 @@
 import { computed, reactive } from 'vue'
+import { getIncrementId } from '@/util'
 
 export type StateFlag = 'start' | 'resize'
 const cursorMap: { [k in StateFlag]: string } = {
@@ -6,17 +7,19 @@ const cursorMap: { [k in StateFlag]: string } = {
   resize: 'nwse-resize'
 }
 type Pos = { top: number; left: number }
-export const useInitState = (initPos: Pos) => {
+export const useInitState = (initPos: Pos, name: string) => {
   return reactive({
     offset: { top: 0, left: 0 },
     size: { width: 512, height: 256 },
     zIndex: 0,
     backgroundPos: { top: 0, left: 0 },
     flagSet: new Set<StateFlag>(),
-    initPos
+    initPos,
+    name,
+    id: getIncrementId('window')
   })
 }
-type windowState = ReturnType<typeof useInitState>
+export type windowState = ReturnType<typeof useInitState>
 export const useWindowWrapStyle = (state: windowState) => {
   const s = state
   const style = computed(() => {
@@ -40,14 +43,15 @@ export const useWindowWrapStyle = (state: windowState) => {
   }
 }
 
-let maxZIndex = 1
+export let maxZIndex = 1
+export const incrMaxZindex = () => ++maxZIndex
 /**
  * 窗口移动和组件重置
  */
 export const useWindowControl = (state: windowState) => {
-  const control = (e: MouseEvent) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const control = (_e: MouseEvent) => {
     state.flagSet.add('start')
-    console.info(maxZIndex)
     if (state.zIndex < maxZIndex) {
       state.zIndex = maxZIndex + 1 // 让点击到窗口保持在最上层
       maxZIndex = state.zIndex
