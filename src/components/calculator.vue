@@ -25,8 +25,6 @@ import { createArray } from '@/util'
 export default defineComponent({
   setup () {
     const displayText = ref('0')
-    const op = ref('')
-    const lastRes = ref(0)
     const codeList = reactive(new Array<string | number>())
     const tempText = computed(() => codeList.join(' '))
     const numKeys = reactive(createArray(10, i => ({ code: i })))
@@ -64,14 +62,11 @@ export default defineComponent({
         case 'c':
           displayText.value = '0'
           while (codeList.pop()) { }
-          op.value = ''
-          lastRes.value = 0
           break
         case '+':
         case '-':
         case '*':
         case '/':
-          op.value = code
           displayText.value = curr + ' ' + code
           codeList.push(code)
           break
