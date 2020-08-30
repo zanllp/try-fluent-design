@@ -27,9 +27,10 @@ export default defineComponent({
     const displayText = ref('0')
     const op = ref('')
     const lastRes = ref(0)
+    const codeList = reactive(new Array<string | number>())
+    const tempText = computed(() => codeList.join(' '))
     const numKeys = reactive(createArray(10, i => ({ code: i })))
-    const clacMethodMap = (op: '+' | '-' | '*' | '/', r: number) => {
-      const l = lastRes.value
+    const clacMethodMap = (op: '+' | '-' | '*' | '/', l: number, r: number) => {
       switch (op) {
         case '+':
           return l + r
@@ -41,8 +42,22 @@ export default defineComponent({
           return l / r
       }
     }
-    const codeList = reactive(new Array<string | number>())
-    const tempText = computed(() => codeList.join(' '))
+    const calc = () => {
+      const readNum = () => {
+        let n = codeList.shift()
+        while (n && typeof codeList[0] === 'number') {
+          n = `${n}${codeList.shift()}`
+        }
+        return Number(n)
+      }
+      let l = readNum()
+      while (codeList.length && l !== undefined) {
+        const op = codeList.shift()
+        const r = readNum()
+        l = clacMethodMap(op as any, l, r)
+      }
+      return l
+    }
     const keydown = (code: number | string) => {
       const curr = displayText.value
       switch (code) {
@@ -57,18 +72,15 @@ export default defineComponent({
         case '*':
         case '/':
           op.value = code
-          displayText.value = curr + code
-          console.info(curr, Number(curr))
-          lastRes.value = clacMethodMap(code, Number(curr))
-          console.info(lastRes.value)
+          displayText.value = curr + ' ' + code
           codeList.push(code)
           break
         case 'ce':
           displayText.value = '0'
           break
         case '=':
-          codeList.push(code)
-          displayText.value = lastRes.value.toString()
+          displayText.value = [...codeList, '=', calc()].join(' ')
+          while (codeList.pop()) {}
           break
         default:
           codeList.push(code)
