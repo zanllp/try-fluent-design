@@ -1,5 +1,5 @@
 <template>
-  <div class="window-container" ref="selfRef" id="bg" @mousemove="onMouseMove">
+  <window-container class="window-manage" :bgUrl="bgUrl">
     <window v-for="window in windows" :key="window.i" :init-pos="window">
       <span>暗黑模式</span>
       <input type="checkbox" v-model="darkMode" />
@@ -12,60 +12,43 @@
     </window>
     <window :init-pos="{ top: 512, left: 480 }">
       <block-container>
-        <block v-for="block in blocks" :key="block" :value="block" style="padding:4px;">
-          {{block}}
-        </block>
-        <block v-for="block in blocks" :key="block" :value="block" style="margin:4px;">
-          {{block}}
-        </block>
+        <block v-for="block in blocks" :key="block" :value="block" style="padding:4px;">{{block}}</block>
+        <block v-for="block in blocks" :key="block" :value="block" style="margin:4px;">{{block}}</block>
         <block>1</block>
         <block style="cursor:pointer;">hello world</block>
       </block-container>
     </window>
-  </div>
+  </window-container>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, toRef, reactive } from 'vue'
-import { getCallBackQuene } from './callbackPoll'
+import { defineComponent, toRef, reactive } from 'vue'
 import { sharedState } from './store'
-
+const bgUrl = 'https://static.ioflow.link/0cfedb5240eadc505e723bf2bc4f14e8bf7eb3fb96fc6ea53e856f3f863c2ba0d38f83de492f609290bc6ad0a9a2b583.jpg'
 export default defineComponent({
   name: 'App',
   setup () {
-    const selfRef = ref<HTMLDivElement | null>(null)
-    const onMouseMove = (e: MouseEvent) => {
-      getCallBackQuene('mousemove').forEach((cb) => cb(e))
-    }
     const windows = reactive(
-      Array(3).fill(null).map((_, i) => ({
-        top: 256 + i * 72,
-        left: 256 + i * 72,
-        i
-      }))
+      Array(3)
+        .fill(null)
+        .map((_, i) => ({
+          top: 256 + i * 72,
+          left: 256 + i * 72,
+          i
+        }))
     )
-    const blocks = reactive(Array(26).fill(null).map((_, idx) => String.fromCharCode(65 + idx)))
+    const blocks = reactive(
+      Array(26)
+        .fill(null)
+        .map((_, idx) => String.fromCharCode(65 + idx))
+    )
     return {
       window,
-      selfRef,
-      onMouseMove,
       darkMode: toRef(sharedState, 'darkMode'),
       windows,
-      blocks
+      blocks,
+      bgUrl
     }
   }
 })
 </script>
-
-<style lang="scss">
-.window-container {
-  background-image: url('./assets/sion.jpg');
-  background-size: 100vw;
-  margin: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: auto;
-  padding: 128px;
-  box-sizing: border-box;
-}
-</style>

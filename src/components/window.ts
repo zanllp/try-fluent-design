@@ -1,4 +1,5 @@
 import { computed, reactive } from 'vue'
+import { getIncrementId } from '@/util'
 
 export type StateFlag = 'start' | 'resize'
 const cursorMap: { [k in StateFlag]: string } = {
@@ -13,10 +14,11 @@ export const useInitState = (initPos: Pos) => {
     zIndex: 0,
     backgroundPos: { top: 0, left: 0 },
     flagSet: new Set<StateFlag>(),
-    initPos
+    initPos,
+    id: getIncrementId('window')
   })
 }
-type windowState = ReturnType<typeof useInitState>
+export type windowState = ReturnType<typeof useInitState>
 export const useWindowWrapStyle = (state: windowState) => {
   const s = state
   const style = computed(() => {
@@ -47,7 +49,6 @@ let maxZIndex = 1
 export const useWindowControl = (state: windowState) => {
   const control = (e: MouseEvent) => {
     state.flagSet.add('start')
-    console.info(maxZIndex)
     if (state.zIndex < maxZIndex) {
       state.zIndex = maxZIndex + 1 // 让点击到窗口保持在最上层
       maxZIndex = state.zIndex

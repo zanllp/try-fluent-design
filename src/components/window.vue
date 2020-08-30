@@ -17,7 +17,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, SetupContext, computed, onMounted, toRef, provide } from 'vue'
+import { defineComponent, SetupContext, computed, onMounted, toRef, provide, inject } from 'vue'
 import { addCallBack } from '@/callbackPoll'
 import { sharedState } from '../store'
 import { num2color } from '@/util'
@@ -50,11 +50,15 @@ export default defineComponent({
     const state = useInitState(initPos)
     const { style } = useWindowWrapStyle(state)
     const { move, control, release } = useWindowControl(state)
-    onMounted(() => {
-      addCallBack('mousemove', move)
-    })
     provide('window-size', state.size)
     provide('window-offset', state.offset)
+    const windowRegist = inject<(window: typeof state) => void>('window-regist')
+    onMounted(() => {
+      addCallBack('mousemove', move)
+      if (windowRegist) {
+        windowRegist(state)
+      }
+    })
     const colorLayerStyle = computed(() => {
       return `background: rgba(${num2color(
         sharedState.darkMode ? 0 : 0xffffff

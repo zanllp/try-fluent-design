@@ -81,7 +81,6 @@ const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number;left: num
       }
       svgRect.value = dom.getBoundingClientRect()
       svgObserver.ro.observe(dom)
-      console.log(dom)
     },
     unmounted: () => {
       svgObserver.ro.disconnect()
