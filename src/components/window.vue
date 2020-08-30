@@ -17,7 +17,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, computed, onMounted, toRef, provide, inject } from 'vue'
+import { defineComponent, computed, onMounted, toRef, provide, inject, ref } from 'vue'
 import { addCallBack } from '@/callbackPoll'
 import { sharedState } from '../store'
 import { num2color } from '@/util'
@@ -39,11 +39,18 @@ export default defineComponent({
     name: {
       type: String,
       default: ''
+    },
+    dark: {
+      type: Boolean,
+      default: undefined
+    },
+    size: {
+      default: () => ({ width: 512, height: 256 })
     }
   },
   setup (props) {
     const p = props
-    const state = useInitState(p.initPos, p.name)
+    const state = useInitState(p.initPos, p.name, p.size)
     const { style } = useWindowWrapStyle(state)
     const { move, control, release } = useWindowControl(state)
     provide('window-size', state.size)
@@ -55,9 +62,14 @@ export default defineComponent({
         windowRegist(state)
       }
     })
+    const darkMode = ref(
+      props.dark === undefined
+        ? toRef(sharedState, 'darkMode')
+        : props.dark
+    )
     const colorLayerStyle = computed(() => {
       return `background: rgba(${num2color(
-        sharedState.darkMode ? 0 : 0xffffff
+        darkMode.value ? 0 : 0xffffff
       )}, 0.4)`
     })
     return {
@@ -65,7 +77,7 @@ export default defineComponent({
       colorLayerStyle,
       release,
       control,
-      darkMode: toRef(sharedState, 'darkMode')
+      darkMode
     }
   }
 })

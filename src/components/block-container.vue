@@ -1,5 +1,5 @@
 <template>
-  <div class="block-container" @mousemove="control" @mouseleave="release">
+  <div class="block-container" @mousemove="control" @mouseleave="release" ref="blockContainerRef">
     <slot></slot>
     <svg
       class="svg-mask"
@@ -187,7 +187,19 @@ export default defineComponent({
       svgObserver
     } = useSvg(windowSize, windowOffset)
     const { updateQuene } = useProvider(blocks)
+    const refreshMask = debounce(() => {
+      console.info(2)
+      updateQuene.forEach(val => val.cb())
+    }, 300)
+    const blockContainerRef = ref<HTMLDivElement>()
+    const ro = new ResizeObserver(refreshMask)
     onMounted(() => {
+      const dom = blockContainerRef.value
+      console.log(dom)
+      if (dom) {
+        console.info(233)
+        ro.observe(dom)
+      }
       const size = inject<Size>('window-size')
       const offset = inject<typeof initOffset>('window-offset')
       if (!(size)) {
@@ -199,16 +211,16 @@ export default defineComponent({
       }
       svgObserver.mounted()
       if (windowSize.value) {
-        watch(() => windowSize.value,
-          debounce(() => updateQuene.forEach(val => val.cb()), 300), {
-            deep: true,
-            immediate: true
-          })
+        watch(() => windowSize.value, refreshMask, {
+          deep: true,
+          immediate: true
+        })
       }
       addCallBack('mousemove', cursorMove)
     })
     onMounted(() => {
       svgObserver.unmounted()
+      ro.disconnect()
     })
     return {
       layout,
@@ -219,7 +231,8 @@ export default defineComponent({
       windowSize,
       isStart,
       maxSide,
-      id
+      id,
+      blockContainerRef
     }
   }
 })
