@@ -1,5 +1,5 @@
 import { computed, reactive } from 'vue'
-import { getIncrementId } from '@/util'
+import { getIncrementId, Size } from '@/util'
 
 export type StateFlag = 'start' | 'resize'
 const cursorMap: { [k in StateFlag]: string } = {
@@ -7,10 +7,10 @@ const cursorMap: { [k in StateFlag]: string } = {
   resize: 'nwse-resize'
 }
 type Pos = { top: number; left: number }
-export const useInitState = (initPos: Pos, name: string) => {
+export const useInitState = (initPos: Pos, name: string, size: Size) => {
   return reactive({
     offset: { top: 0, left: 0 },
-    size: { width: 512, height: 256 },
+    size,
     zIndex: 0,
     backgroundPos: { top: 0, left: 0 },
     flagSet: new Set<StateFlag>(),
