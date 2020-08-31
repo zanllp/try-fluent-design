@@ -11,6 +11,7 @@
   "dependencies": {
     "@types/lodash": "^4.14.159",
     "core-js": "^3.6.5",
+    "dayjs": "^1.8.34",
     "lodash": "^4.17.20",
     "vue": "^3.0.0-0",
     "webpack": "^4.44.1"
@@ -49,9 +50,9 @@
       "ecmaVersion": 2020
     },
     "rules": {
-      "@typescript-eslint/no-explicit-any":0,
-      "@typescript-eslint/no-non-null-assertion":0
-    }  
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/no-non-null-assertion": 0
+    }
   },
   "browserslist": [
     "> 1%",

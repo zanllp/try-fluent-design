@@ -1,6 +1,6 @@
 <template>
   <window-container class="window-manage" :bg-url="bgUrl">
-    <window v-for="window in windows" :key="window.i" :init-pos="window" :name="window.name">
+    <!--window v-for="window in windows" :key="window.i" :init-pos="window" :name="window.name">
       <span>暗黑模式</span>
       <input v-model="darkMode" type="checkbox" />
       <h1>Create a responsive layout-{{ window.i + 1 }}</h1>
@@ -18,7 +18,8 @@
         <block style="cursor:pointer;">hello world</block>
       </block-container>
     </window>
-    <calculator/>
+    <calculator/-->
+    <calendar/>
   </window-container>
 </template>
 
@@ -27,10 +28,13 @@ import { defineComponent, toRef, reactive } from 'vue'
 import { sharedState } from './store'
 import { createArray } from './util'
 import calculator from './components/calculator.vue'
+import calendar from './components/calendar.vue'
 const bgUrl = 'https://static.ioflow.link/0cfedb5240eadc505e723bf2bc4f14e8bf7eb3fb96fc6ea53e856f3f863c2ba0d38f83de492f609290bc6ad0a9a2b583.jpg'
 export default defineComponent({
   components: {
-    calculator
+    // eslint-disable-next-line vue/no-unused-components
+    calculator,
+    calendar
   },
   name: 'App',
   setup () {
