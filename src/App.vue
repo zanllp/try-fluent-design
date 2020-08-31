@@ -1,6 +1,6 @@
 <template>
   <window-container class="window-manage" :bg-url="bgUrl">
-    <!--window v-for="window in windows" :key="window.i" :init-pos="window" :name="window.name">
+    <window v-for="window in windows" :key="window.i" :init-pos="window" :name="window.name">
       <span>暗黑模式</span>
       <input v-model="darkMode" type="checkbox" />
       <h1>Create a responsive layout-{{ window.i + 1 }}</h1>
@@ -18,7 +18,7 @@
         <block style="cursor:pointer;">hello world</block>
       </block-container>
     </window>
-    <calculator/-->
+    <calculator/>
     <calendar/>
   </window-container>
 </template>
@@ -38,7 +38,7 @@ export default defineComponent({
   },
   name: 'App',
   setup () {
-    const windows = reactive(createArray(3,
+    const windows = reactive(createArray(2,
       i => ({
         top: 256 + i * 72,
         left: 256 + i * 72,

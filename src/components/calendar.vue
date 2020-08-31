@@ -15,13 +15,15 @@
       <div>
         <span v-for="n in 7" :key="n" class="table-cell block-adapter">星期{{bucketsMap[n-1]}}</span>
         <div v-for="(week,idx) in buckets" :key="idx">
-          <block
-            v-for="(dayN,dayIdx) in week"
-            :key="dayIdx"
-            class="day table-cell"
-            :data-now="day.get('date')===dayN"
-            @click="onDayBtnClick(dayN)"
-          >{{dayN}}</block>
+          <span v-for="(dayN,dayIdx) in week" :key="dayIdx">
+            <block
+              v-if="dayN !== undefined"
+              class="day table-cell"
+              :data-now="day.get('date')===dayN"
+              @click="onDayBtnClick(dayN)"
+            >{{dayN}}</block>
+            <div v-else class="block-adapter table-cell" />
+          </span>
         </div>
       </div>
     </block-container>
@@ -40,7 +42,7 @@ dayjs.extend(LocalizedFormat)
  * 获取指定月份，年份里多少天，月份0-11
  */
 const daysInMonth = (month: number, year: number) => {
-  return dayjs().set('year', year).set('month', month).subtract(1, 'day').get('date') + 1
+  return dayjs().set('year', year).set('month', month + 1).set('date', -1).get('date') + 1
 }
 export default defineComponent({
   setup () {
@@ -103,9 +105,9 @@ export default defineComponent({
 }
 .day {
   cursor: pointer;
-  border: rgb(197, 197, 197) 2px solid;
+  border: transparent 2px solid;
   &[data-now="true"] {
-    border: #1890ff 2px solid;
+    border: rgb(197, 197, 197) 2px solid;
   }
 }
 .title {
