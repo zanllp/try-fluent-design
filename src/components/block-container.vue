@@ -17,8 +17,8 @@
         <mask :id="`Mask-${id}`">
           <template v-for="item in layout">
             <rect
-              :x="item.x"
-              :y="item.y"
+              :x="item.x-1"
+              :y="item.y-1"
               :width="item.width"
               :height="item.height"
               :key="item.i"

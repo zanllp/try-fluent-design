@@ -19,6 +19,7 @@
       </block-container>
     </window>
     <calculator/>
+    <calendar/>
   </window-container>
 </template>
 
@@ -27,14 +28,17 @@ import { defineComponent, toRef, reactive } from 'vue'
 import { sharedState } from './store'
 import { createArray } from './util'
 import calculator from './components/calculator.vue'
+import calendar from './components/calendar.vue'
 const bgUrl = 'https://static.ioflow.link/0cfedb5240eadc505e723bf2bc4f14e8bf7eb3fb96fc6ea53e856f3f863c2ba0d38f83de492f609290bc6ad0a9a2b583.jpg'
 export default defineComponent({
   components: {
-    calculator
+    // eslint-disable-next-line vue/no-unused-components
+    calculator,
+    calendar
   },
   name: 'App',
   setup () {
-    const windows = reactive(createArray(3,
+    const windows = reactive(createArray(2,
       i => ({
         top: 256 + i * 72,
         left: 256 + i * 72,
