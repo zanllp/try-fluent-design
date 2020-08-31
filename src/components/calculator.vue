@@ -1,33 +1,29 @@
 <template>
-  <window name="计算器" :dark="false" :size="{ height: 400, width: 512 }">
+  <window name="计算器" :dark="false" :size="{ height: 384, width: 512 }">
     <block-container>
       <div class="temp-area">{{tempText}}</div>
       <div class="display-area">{{ displayText}}</div>
       <div>
-        <block v-for="op in operators" :key="op" class="key-btn" @click="keydown(op)">{{op}}</block>
+        <block v-for="op in operators" :key="op" class="key-btn op-btn" @click="keydown(op)">{{op}}</block>
       </div>
       <div>
-        <block
-          v-for="key in numKeys"
-          :key="key.code"
-          class="key-btn"
-          @click="keydown(key.code)"
-        >{{key.code}}</block>
+        <block v-for="key in numKeys" :key="key" class="key-btn" @click="keydown(key)">{{key}}</block>
       </div>
     </block-container>
   </window>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, computed } from 'vue'
+import { defineComponent, reactive, computed } from 'vue'
 import { createArray } from '@/util'
 
 export default defineComponent({
   setup () {
-    const displayText = ref('0')
+    const displayTextList = reactive<Array<string | number>>([0])
+    const displayText = computed(() => displayTextList.join(''))
     const codeList = reactive(new Array<string | number>())
-    const tempText = computed(() => codeList.join(' '))
-    const numKeys = reactive(createArray(10, i => ({ code: i })))
+    const tempText = computed(() => codeList.join(''))
+    const numKeys = reactive(createArray(10, i => i))
     const clacMethodMap = (op: '+' | '-' | '*' | '/', l: number, r: number) => {
       switch (op) {
         case '+':
@@ -56,34 +52,46 @@ export default defineComponent({
       }
       return l
     }
+    const resetArray = function <T> (arr: Array<T>, ...rest: T[]) {
+      arr.splice(0, arr.length, ...rest)
+    }
     const keydown = (code: number | string) => {
-      const curr = displayText.value
+      const dl = displayTextList
       switch (code) {
         case 'c':
-          displayText.value = '0'
-          while (codeList.pop()) { }
+          resetArray(dl, 0)
+          resetArray(codeList)
           break
         case '+':
         case '-':
         case '*':
         case '/':
-          displayText.value = curr + ' ' + code
+          dl.push(code)
           codeList.push(code)
           break
         case 'ce':
-          displayText.value = '0'
+          resetArray(dl, 0)
           break
         case '=':
-          displayText.value = [...codeList, '=', calc()].join(' ')
-          while (codeList.pop()) {}
+          resetArray(dl, ...codeList, '=', calc())
+          break
+        case 'del':
+          dl.pop()
+          codeList.pop()
           break
         default:
           codeList.push(code)
-          displayText.value = (curr === '0' ? '' : curr) + code
+          if (typeof dl[dl.length - 1] !== 'number') {
+            resetArray(dl)
+          }
+          if (dl.length === 1 && dl[0] === 0) {
+            dl.pop()
+          }
+          dl.push(code)
           break
       }
     }
-    const operators = reactive(['+', '-', '*', '/', 'c', 'ce', '='])
+    const operators = reactive(['+', '-', '*', '/', 'c', 'ce', '=', 'del'])
     return {
       numKeys,
       displayText,
@@ -120,5 +128,8 @@ export default defineComponent({
   &:hover {
     background: #b5b5b5;
   }
+}
+.op-btn {
+  background: #d6d6d6;
 }
 </style>

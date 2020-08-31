@@ -18,7 +18,7 @@
         <block style="cursor:pointer;">hello world</block>
       </block-container>
     </window>
-    <calculator></calculator>
+    <calculator/>
   </window-container>
 </template>
 

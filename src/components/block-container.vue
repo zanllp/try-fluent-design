@@ -52,7 +52,8 @@ import {
   watch,
   computed,
   reactive,
-  Ref
+  Ref,
+  onUnmounted
 } from 'vue'
 import { debounce } from 'lodash'
 import { addCallBack } from '@/callbackPoll'
@@ -188,16 +189,13 @@ export default defineComponent({
     } = useSvg(windowSize, windowOffset)
     const { updateQuene } = useProvider(blocks)
     const refreshMask = debounce(() => {
-      console.info(2)
       updateQuene.forEach(val => val.cb())
-    }, 300)
+    }, 100)
     const blockContainerRef = ref<HTMLDivElement>()
     const ro = new ResizeObserver(refreshMask)
     onMounted(() => {
       const dom = blockContainerRef.value
-      console.log(dom)
       if (dom) {
-        console.info(233)
         ro.observe(dom)
       }
       const size = inject<Size>('window-size')
@@ -218,7 +216,7 @@ export default defineComponent({
       }
       addCallBack('mousemove', cursorMove)
     })
-    onMounted(() => {
+    onUnmounted(() => {
       svgObserver.unmounted()
       ro.disconnect()
     })
