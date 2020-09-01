@@ -17,7 +17,9 @@
 ## 例子
 ### 一个不够健壮的流畅设计风格计算器
 [点这里看源码](./src/components/calculator.vue)
+
 ![计算器](./doc-img/calculator.png)
 ### 日历
 [点这里看源码](./src/components/calendar.vue)
+
 ![日历](./doc-img/calendar.PNG)
