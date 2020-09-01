@@ -94,35 +94,79 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.table-cell {
-  display: inline-block;
-  height: 48px;
-  line-height: 48px;
-  text-align: center;
-  width: 48px;
+@mixin CalcWidth($per) {
+  width: 100% * $per / 24;
 }
-.block-adapter {
-  border: 2px solid transparent;
-  margin: 2px;
+.col-1 {
+  @include CalcWidth(1);
 }
-.day {
-  cursor: pointer;
-  border: transparent 2px solid;
-  &[data-now="true"] {
-    border: rgb(197, 197, 197) 2px solid;
-  }
+.col-2 {
+  @include CalcWidth(2);
 }
-.title {
-  display: inline-block;
-  margin: 0 16px;
+.col-3 {
+  @include CalcWidth(3);
 }
-.action-bar {
-  display: inline-block;
-  margin: 16px 0;
-  .action-icon {
-    padding: 8px;
-    cursor: pointer;
-    display: inline-block;
-  }
+.col-4 {
+  @include CalcWidth(4);
+}
+.col-5 {
+  @include CalcWidth(5);
+}
+.col-6 {
+  @include CalcWidth(6);
+}
+.col-7 {
+  @include CalcWidth(7);
+}
+.col-8 {
+  @include CalcWidth(8);
+}
+.col-9 {
+  @include CalcWidth(9);
+}
+.col-10 {
+  @include CalcWidth(2);
+}
+.col-11 {
+  @include CalcWidth(2);
+}
+.col-12 {
+  @include CalcWidth(2);
+}
+.col-13 {
+  @include CalcWidth(2);
+}
+.col-14 {
+  @include CalcWidth(2);
+}
+.col-15 {
+  @include CalcWidth(2);
+}
+.col-16 {
+  @include CalcWidth(2);
+}
+.col-17 {
+  @include CalcWidth(2);
+}
+.col-18 {
+  @include CalcWidth(2);
+}
+.col-19 {
+  @include CalcWidth(2);
+}
+.col-20 {
+  @include CalcWidth(2);
+}
+.col-21 {
+  @include CalcWidth(2);
+}
+.col-22 {
+  @include CalcWidth(2);
+}
+.col-23 {
+  @include CalcWidth(2);
+}
+.col-24 {
+  @include CalcWidth(2);
 }
 </style>

@@ -10,23 +10,27 @@
       ref="svgRef"
     >
       <defs>
-        <radialGradient :id="`Gradient-${id}`" :cx="svgCursorPercent.x" :cy="svgCursorPercent.y" r="0.2">
+        <radialGradient
+          :id="`Gradient-${id}`"
+          :cx="svgCursorPercent.x"
+          :cy="svgCursorPercent.y"
+          r="0.2"
+        >
           <stop offset="0%" stop-color="white" />
           <stop offset="100%" stop-color="transparent" />
         </radialGradient>
         <mask :id="`Mask-${id}`">
-          <template v-for="item in layout">
-            <rect
-              :x="item.x-1"
-              :y="item.y-1"
-              :width="item.width"
-              :height="item.height"
-              :key="item.i"
-              fill="black"
-              stroke="white"
-              stroke-width="2"
-            />
-          </template>
+          <rect
+            v-for="item in layout"
+            :x="item.x-1"
+            :y="item.y-1"
+            :width="item.width"
+            :height="item.height"
+            :key="item.i"
+            fill="black"
+            stroke="white"
+            stroke-width="2"
+          />
         </mask>
       </defs>
       <rect
@@ -59,7 +63,7 @@ import { debounce } from 'lodash'
 import { addCallBack } from '@/callbackPoll'
 import { Size, AnyBlockState, getIncrementId } from '@/util'
 
-const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number;left: number }>) => {
+const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: number }>) => {
   type state = {
     rect: {
       width: number;
