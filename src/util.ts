@@ -63,7 +63,7 @@ export const breakPointPriorityListAsc = readonly([...breakPointPriorityList].re
 export const useBreakPoint = () => {
   const size = inject<Size>('window-size')
   if (!size) {
-    throw new Error('useReactiveBreakPoint必须在window组件的包裹的组件内')
+    throw new Error('useBreakPoint必须在window组件的包裹的组件内')
   }
   return computed(() => {
     const w = size.width
