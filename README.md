@@ -10,7 +10,7 @@
 ### 探照灯?
 ![](./doc-img/glow.gif)
 ### 响应式24栏栅格
-支持xs,sm,md,lg,xl五种尺寸
+支持xs,sm,md,lg,xl五种尺寸,断点尺寸响应window组件的宽度变化，而不是视口的宽度
 [点这里看例子源码](./src/example/reactive-layout.vue)
 
 ![](./doc-img/reactive-break-point.gif)
