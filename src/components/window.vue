@@ -77,8 +77,7 @@ export default defineComponent({
       colorLayerStyle,
       release,
       control,
-      darkMode,
-      state
+      darkMode
     }
   }
 })
