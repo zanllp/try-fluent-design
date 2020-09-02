@@ -12,7 +12,12 @@
 ### 响应式24栏栅格
 支持xs,sm,md,lg,xl五种尺寸,断点尺寸响应window组件的宽度变化，而不是视口的宽度
 [点这里看例子源码](./src/example/reactive-layout.vue)
-
+## TODO
+* 自动布局
+* 连接动画
+* 并行动画
+* 视差动画
+* 多材质支持
 ![](./doc-img/reactive-break-point.gif)
 ## 相对于uwp流畅设计的主要区别
 * 没有噪声层
