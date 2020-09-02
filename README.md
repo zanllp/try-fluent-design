@@ -9,6 +9,11 @@
 ![](./doc-img/resize.gif)
 ### 探照灯?
 ![](./doc-img/glow.gif)
+### 响应式24栏栅格
+支持xs,sm,md,lg,xl五种尺寸
+[点这里看例子源码](./src/example/reactive-layout.vue)
+
+![](./doc-img/reactive-break-point.gif)
 ## 相对于uwp流畅设计的主要区别
 * 没有噪声层
 * 动态模糊，模糊的只是背景，看不出窗口的重叠情况
@@ -16,10 +21,10 @@
 * 通过右侧about的链接进入
 ## 例子
 ### 一个不够健壮的流畅设计风格计算器
-[点这里看源码](./src/components/calculator.vue)
+[点这里看源码](./src/example/calculator.vue)
 
 ![计算器](./doc-img/calculator.png)
 ### 日历
-[点这里看源码](./src/components/calendar.vue)
+[点这里看源码](./src/example/calendar.vue)
 
 ![日历](./doc-img/calendar.PNG)
