@@ -10,7 +10,7 @@
             <div class="action-icon" @click="onActionBtnClick('incr')">→</div>
           </block>
         </div>
-        <div class="title">{{day.format('L')+bp}}</div>
+        <div class="title">{{day.format('L')}}</div>
       </div>
       <div>
         <span v-for="n in 7" :key="n" class="table-cell block-adapter">星期{{bucketsMap[n-1]}}</span>
@@ -35,7 +35,7 @@ import { defineComponent, computed, ref } from 'vue'
 import dayjs from 'dayjs'
 import LocalizedFormat from 'dayjs/plugin/localizedFormat'
 import 'dayjs/locale/zh-cn'
-import { createArray, useReactiveBreakPoint } from '@/util'
+import { createArray } from '@/util'
 dayjs.locale('zh-cn')
 dayjs.extend(LocalizedFormat)
 /**
@@ -79,15 +79,13 @@ export default defineComponent({
         )
     )
     const bucketsMap = '天一二三四五六'
-    const bp = useReactiveBreakPoint()
     return {
       days,
       day,
       onActionBtnClick,
       onDayBtnClick,
       bucketsMap,
-      buckets,
-      bp
+      buckets
     }
   }
 })

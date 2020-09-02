@@ -1,172 +1,257 @@
 <template>
-  <window name="日历" :size="{ height: 550, width: 448 }">
-    <block-container>
-      <div class="profile">
-        <div class="action-bar">
-          <block>
-            <div class="action-icon" @click="onActionBtnClick('decr')">←</div>
-          </block>
-          <block>
-            <div class="action-icon" @click="onActionBtnClick('incr')">→</div>
-          </block>
-        </div>
-        <div class="title">{{day.format('L')+bp}}</div>
-      </div>
-      <div>
-        <span v-for="n in 7" :key="n" class="table-cell block-adapter">星期{{bucketsMap[n-1]}}</span>
-        <div v-for="(week,idx) in buckets" :key="idx">
-          <span v-for="(dayN,dayIdx) in week" :key="dayIdx">
-            <block
-              v-if="dayN !== undefined"
-              class="day table-cell"
-              :data-now="day.get('date')===dayN"
-              @click="onDayBtnClick(dayN)"
-            >{{dayN}}</block>
-            <div v-else class="block-adapter table-cell" />
-          </span>
-        </div>
-      </div>
-    </block-container>
-  </window>
+  <div :class="[...classList,'base-col-class']">
+    <slot />
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref } from 'vue'
-import dayjs from 'dayjs'
-import LocalizedFormat from 'dayjs/plugin/localizedFormat'
-import 'dayjs/locale/zh-cn'
-import { createArray, useReactiveBreakPoint } from '@/util'
-dayjs.locale('zh-cn')
-dayjs.extend(LocalizedFormat)
-/**
- * 获取指定月份，年份里多少天，月份0-11
- */
-const daysInMonth = (month: number, year: number) => {
-  return dayjs().set('year', year).set('month', month + 1).set('date', -1).get('date') + 1
-}
-export default defineComponent({
-  setup () {
-    const day = ref(dayjs())
-    const days = computed(() => daysInMonth(day.value.get('month'), day.value.get('year')))
-    const onActionBtnClick = (act: 'incr' | 'decr') => {
-      switch (act) {
-        case 'incr':
-          day.value = day.value.add(1, 'month')
-          break
-        case 'decr':
-          day.value = day.value.subtract(1, 'month')
-          break
+import { defineComponent, computed, ComputedRef } from 'vue'
+import { BreakPointFlag, usePriorityBreakPoint, breakPointPriorityListAsc } from '@/util'
+
+type BreakPointObjPart = { [k in BreakPointFlag]?: number }
+type ColParams = number|BreakPointObjPart
+type ColParamsRef = ComputedRef<ColParams>
+
+const useColClass = (breakPoint: ReturnType<typeof usePriorityBreakPoint>, offset: ColParamsRef, span: ColParamsRef) => {
+  const classList = computed(() => {
+    const list = new Array<string>()
+    const o = offset.value
+    const s = span.value
+    const bp = breakPoint.value
+    // 在所有实现中优先使用最小尺寸，如果没实现，从这个位置向最大进行匹配
+    if (typeof o === 'number') {
+      list.push(`col-offset-${o}`)
+    } else {
+      const availableBreakPoint = bp.filter(flag => o[flag])[0] // 选取实现了且优先级最高的
+      if (availableBreakPoint) {
+        list.push(`col-offset-${o[availableBreakPoint]}`)
+      } else { // 没实现进行回退
+        const priorityList = breakPointPriorityListAsc
+        const topPriority = bp[0]
+        for (let index = priorityList.indexOf(topPriority) + 1; index < priorityList.length; index++) {
+          if (o[priorityList[index]]) {
+            list.push(`col-offset-${o[priorityList[index]]}`)
+            break
+          }
+        }
       }
     }
-    const onDayBtnClick = (nextDay: number) => {
-      day.value = day.value.set('date', nextDay)
-    }
-    const buckets = computed(() =>
-      createArray(days.value, i => i + 1)
-        .reduce<Array<Array<number>>>((p, c) => {
-          const currDay = day.value.set('date', c)
-          const dayIndex = currDay.get('day')
-          let week: Array<number>
-          if (dayIndex === 0 || p[p.length - 1].length > 6) { // 当星期天或者上周排满时
-            week = new Array<number>()
-            p.push(week)
-          } else {
-            week = p[p.length - 1]
+    if (typeof s === 'number') {
+      list.push(`col-span-${s}`)
+    } else {
+      const availableBreakPoint = bp.filter(flag => s[flag])[0]
+      if (availableBreakPoint) {
+        list.push(`col-span-${s[availableBreakPoint]}`)
+      } else { // 没实现进行回退
+        const priorityList = breakPointPriorityListAsc
+        const topPriority = bp[0]
+        for (let index = priorityList.indexOf(topPriority) + 1; index < priorityList.length; index++) {
+          if (s[priorityList[index]]) {
+            list.push(`col-span-${s[priorityList[index]]}`)
+            break
           }
-          week[dayIndex] = c
-          return p
-        }, [[]]
-        )
-    )
-    const bucketsMap = '天一二三四五六'
-    const bp = useReactiveBreakPoint()
+        }
+      }
+    }
+    return list
+  })
+  return {
+    classList
+  }
+}
+export default defineComponent({
+  name: 'fd-col',
+  props: {
+    span: {
+      default: () => {
+        if (' '.length) { // 这么做是因为vue弱鸡的类型推断
+          throw new Error('col组件的span必填！')
+        }
+        return 0 as string | ColParams
+      }
+    },
+    offset: {
+      default: 0 as number | ColParams
+    }
+  },
+  setup (props) {
+    const breakPoint = usePriorityBreakPoint()
+    const span = computed(() => {
+      const s = props.span
+      const res = typeof s === 'string' ? Number(s) : s
+      return res
+    })
+    const offset = computed(() => {
+      const o = props.offset
+      const res = typeof o === 'string' ? Number(o) : o
+      return res
+    })
+    const { classList } = useColClass(breakPoint, offset, span)
     return {
-      days,
-      day,
-      onActionBtnClick,
-      onDayBtnClick,
-      bucketsMap,
-      buckets,
-      bp
+      classList
     }
   }
 })
 </script>
 
 <style lang="scss" scoped>
-@mixin CalcWidth($per) {
+.base-col-class {
+  display: inline-block;
+}
+@mixin CalcSpan($per) {
   width: 100% * $per / 24;
 }
-.col-1 {
-  @include CalcWidth(1);
+@mixin CalcOffset($per) {
+  margin-left: 100% * $per / 24;
 }
-.col-2 {
-  @include CalcWidth(2);
+.col-span-0 {
+  @include CalcSpan(0);
 }
-.col-3 {
-  @include CalcWidth(3);
+.col-span-1 {
+  @include CalcSpan(1);
 }
-.col-4 {
-  @include CalcWidth(4);
+.col-span-2 {
+  @include CalcSpan(2);
 }
-.col-5 {
-  @include CalcWidth(5);
+.col-span-3 {
+  @include CalcSpan(3);
 }
-.col-6 {
-  @include CalcWidth(6);
+.col-span-4 {
+  @include CalcSpan(4);
 }
-.col-7 {
-  @include CalcWidth(7);
+.col-span-5 {
+  @include CalcSpan(5);
 }
-.col-8 {
-  @include CalcWidth(8);
+.col-span-6 {
+  @include CalcSpan(6);
 }
-.col-9 {
-  @include CalcWidth(9);
+.col-span-7 {
+  @include CalcSpan(7);
 }
-.col-10 {
-  @include CalcWidth(2);
+.col-span-8 {
+  @include CalcSpan(8);
 }
-.col-11 {
-  @include CalcWidth(2);
+.col-span-9 {
+  @include CalcSpan(9);
 }
-.col-12 {
-  @include CalcWidth(2);
+.col-span-10 {
+  @include CalcSpan(10);
 }
-.col-13 {
-  @include CalcWidth(2);
+.col-span-11 {
+  @include CalcSpan(11);
 }
-.col-14 {
-  @include CalcWidth(2);
+.col-span-12 {
+  @include CalcSpan(12);
 }
-.col-15 {
-  @include CalcWidth(2);
+.col-span-13 {
+  @include CalcSpan(13);
 }
-.col-16 {
-  @include CalcWidth(2);
+.col-span-14 {
+  @include CalcSpan(14);
 }
-.col-17 {
-  @include CalcWidth(2);
+.col-span-15 {
+  @include CalcSpan(15);
 }
-.col-18 {
-  @include CalcWidth(2);
+.col-span-16 {
+  @include CalcSpan(16);
 }
-.col-19 {
-  @include CalcWidth(2);
+.col-span-17 {
+  @include CalcSpan(17);
 }
-.col-20 {
-  @include CalcWidth(2);
+.col-span-18 {
+  @include CalcSpan(18);
 }
-.col-21 {
-  @include CalcWidth(2);
+.col-span-19 {
+  @include CalcSpan(19);
 }
-.col-22 {
-  @include CalcWidth(2);
+.col-span-20 {
+  @include CalcSpan(20);
 }
-.col-23 {
-  @include CalcWidth(2);
+.col-span-21 {
+  @include CalcSpan(12);
 }
-.col-24 {
-  @include CalcWidth(2);
+.col-span-22 {
+  @include CalcSpan(22);
+}
+.col-span-23 {
+  @include CalcSpan(23);
+}
+.col-span-24 {
+  @include CalcSpan(24);
+}
+.col-offset-0 {
+  @include CalcOffset(0);
+}
+.col-offset-1 {
+  @include CalcOffset(1);
+}
+.col-offset-2 {
+  @include CalcOffset(2);
+}
+.col-offset-3 {
+  @include CalcOffset(3);
+}
+.col-offset-4 {
+  @include CalcOffset(4);
+}
+.col-offset-5 {
+  @include CalcOffset(5);
+}
+.col-offset-6 {
+  @include CalcOffset(6);
+}
+.col-offset-7 {
+  @include CalcOffset(7);
+}
+.col-offset-8 {
+  @include CalcOffset(8);
+}
+.col-offset-9 {
+  @include CalcOffset(9);
+}
+.col-offset-10 {
+  @include CalcOffset(10);
+}
+.col-offset-11 {
+  @include CalcOffset(11);
+}
+.col-offset-12 {
+  @include CalcOffset(12);
+}
+.col-offset-13 {
+  @include CalcOffset(13);
+}
+.col-offset-14 {
+  @include CalcOffset(14);
+}
+.col-offset-15 {
+  @include CalcOffset(15);
+}
+.col-offset-16 {
+  @include CalcOffset(16);
+}
+.col-offset-17 {
+  @include CalcOffset(17);
+}
+.col-offset-18 {
+  @include CalcOffset(18);
+}
+.col-offset-19 {
+  @include CalcOffset(19);
+}
+.col-offset-20 {
+  @include CalcOffset(20);
+}
+.col-offset-21 {
+  @include CalcOffset(12);
+}
+.col-offset-22 {
+  @include CalcOffset(22);
+}
+.col-offset-23 {
+  @include CalcOffset(23);
+}
+.col-offset-24 {
+  @include CalcOffset(24);
 }
 </style>
