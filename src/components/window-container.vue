@@ -27,15 +27,20 @@ const useAutoLayout = (_windows: windowState[], bodyRect: Ref<DOMRect | undefine
   const BaseLines: BaseLine[] = [{ y: 0, width: availableWidth }]
   let windows = [..._windows]
   let scale = 1
+  const getStartPos = (index: number) => {
+    if (index === 0) {
+      return 0
+    }
+    return BaseLines.slice(0, index).reduce((p, c) => p + c.width, 0)
+  }
   const insertBaseLine = (base: BaseLine, start: number) => {
     const end = start + base.width
-    let startBase: BaseLine|undefined // 插入后的受影响范围
-    let endBase: BaseLine|undefined
-    const getStartPos = (index: number) => BaseLines.slice(0, index - 1).reduce((p, c) => p + c.width, 0)
+    let startBase: BaseLine | undefined // 插入后的受影响范围
+    let endBase: BaseLine | undefined
     for (let index = 0; index < BaseLines.length; index++) {
       const curr = BaseLines[index]
       const currBaseLineStartPos = getStartPos(index) // 前面所有基线加起来的宽度
-      if (currBaseLineStartPos <= start && start <= currBaseLineStartPos + curr.width) {
+      if (!startBase && (currBaseLineStartPos <= start && start <= currBaseLineStartPos + curr.width)) {
         startBase = curr
       }
       if (currBaseLineStartPos <= end && end <= currBaseLineStartPos + curr.width) {
@@ -58,7 +63,9 @@ const useAutoLayout = (_windows: windowState[], bodyRect: Ref<DOMRect | undefine
       y: endBase.y,
       width: getStartPos(endIdx) + endBase.width - (getStartPos(startIdx) + newStart.width + base.width)
     }
-    BaseLines.splice(startIdx, endIdx - startIdx, newStart, base, newEnd)
+    console.log(startIdx, endIdx)
+
+    BaseLines.splice(startIdx, endIdx - startIdx + 1, newStart, base, newEnd)
   }
   const alloc = (curr: windowState) => {
     const x = 0
