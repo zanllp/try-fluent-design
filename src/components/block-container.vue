@@ -218,7 +218,7 @@ export default defineComponent({
           immediate: true
         })
       }
-      addCallBack('mousemove', cursorMove)
+      addCallBack('mousemove', debounce(cursorMove))
     })
     onUnmounted(() => {
       svgObserver.unmounted()

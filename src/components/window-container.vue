@@ -11,6 +11,11 @@ import { windowState } from './window'
 import { getCallBackQuene } from '@/callbackPoll'
 import sidebar from './sidebar.vue'
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const layout = (window: windowState) => {
+
+}
+
 export default defineComponent({
   name: 'window-container',
   props: {

@@ -15,7 +15,7 @@
 
 <script lang="ts">
 import { defineComponent, reactive, computed } from 'vue'
-import { createArray } from '@/util'
+import { createArray, resetArray } from '@/util'
 
 export default defineComponent({
   setup () {
@@ -51,9 +51,6 @@ export default defineComponent({
         l = clacMethodMap(op as any, l, r)
       }
       return l
-    }
-    const resetArray = function <T> (arr: Array<T>, ...rest: T[]) {
-      arr.splice(0, arr.length, ...rest)
     }
     const keydown = (code: number | string) => {
       const dl = displayTextList

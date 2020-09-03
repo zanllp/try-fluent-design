@@ -89,3 +89,7 @@ export const usePriorityBreakPoint = () => {
       .map(pair => pair[0] as BreakPointFlag)
   })
 }
+
+export const resetArray = function <T> (arr: Array<T>, ...rest: T[]) {
+  arr.splice(0, arr.length, ...rest)
+}
