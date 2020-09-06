@@ -8,6 +8,10 @@ export type BaseLine = { y: number; width: number }
 export const getStartPosPF = (BaseLines: BaseLine[], index: number) => {
   return BaseLines.slice(0, index).reduce((p, c) => p + c.width, 0)
 }
+
+const note = (msg: string) => {
+  throw new Error(msg)
+}
 const debug = (x: any, msg = '') => console.log(msg + (msg ? ': \n' : '') + JSON.stringify(x, null, 4))
 const i = 0
 export const insertBaseLinePF = (BaseLines: BaseLine[], base: BaseLine, start: number) => {
@@ -85,6 +89,7 @@ const alloc = (conf: AllocConf, curr: windowState) => {
           start: reduceWidth - base.width
         }
       }
+      note('下面的reduceWidth > maxWidth应该加上左边其它元素的宽度')
       if (idx === BaseLines.length - 1 || reduceWidth > maxWidth) { // 移到最右侧或者放不下 换下一行
         const nextY = BaseLines.reduce((p, c) => p > c.y ? p : c.y, 0)
         insertBaseLine({ y: nextY, width: maxWidth }, 0)
@@ -98,22 +103,27 @@ const alloc = (conf: AllocConf, curr: windowState) => {
           }]
         }
       }
-      return scan(BaseLines[idx + 1], ...seq, base) // 继续向右找
+      return scan(BaseLines[idx + 1], ...seq) // 继续向右找
     }
     for (const base of BaseLines) {
       const res = scan(base, base)
       if (res) { // 将求得的解合并
+        const width = res.bls.reduce((p, c) => c.width + p, 0) * scale
         availableArea.push({
           baseLine: {
-            width: res.bls.reduce((p, c) => c.width + p, 0) * scale,
+            width: Math.min(width, curr.size.width * scale),
             y: Math.max(...res.bls.map(x => x.y))
           },
           start: res.start
         })
+        if (width === 1120) {
+          console.info(res)
+        }
       }
     }
     if (availableArea.length && availableArea[0].baseLine.y !== 0) {
-      const res = availableArea.sort((a, b) => b.baseLine.y - a.baseLine.y)[0] // 存在多种解，取最优解
+      const res = availableArea.sort((a, b) => a.baseLine.y - b.baseLine.y)[0] // 存在多种解，取最优解
+      console.info(availableArea)
       x = res.start
       y = res.baseLine.y
       debug(res, '新插入基线')
