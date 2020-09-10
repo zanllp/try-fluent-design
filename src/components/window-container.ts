@@ -5,15 +5,19 @@ import { windowState } from './window'
 
 export type BaseLine = { y: number; width: number }
 
+/**
+ * 获取指定块在目标基线序列中的起始位置
+ * @param BaseLines 基线序列
+ * @param index 目标基线索引
+ */
 export const getStartPosPF = (BaseLines: BaseLine[], index: number) => {
   return BaseLines.slice(0, index).reduce((p, c) => p + c.width, 0)
 }
 
-const note = (msg: string) => {
+export const note = (msg: string) => {
   throw new Error(msg)
 }
 const debug = (x: any, msg = '') => console.log(msg + (msg ? ': \n' : '') + JSON.stringify(x, null, 4))
-const i = 0
 export const insertBaseLinePF = (BaseLines: BaseLine[], base: BaseLine, start: number) => {
   const allWidth = BaseLines.reduce((p, c) => p + c.width, 0)
   const maxY = BaseLines.reduce((p, c) => p > c.y ? p : c.y, 0)
@@ -58,6 +62,47 @@ export const insertBaseLinePF = (BaseLines: BaseLine[], base: BaseLine, start: n
   }
   debug(BaseLines, '更新基线')
 }
+
+export const scanPF = (BaseLines: BaseLine[], maxWidth: number, needWidth: number) => {
+  const getStartPos = curry(getStartPosPF, BaseLines)
+  const insertBaseLine = curry(insertBaseLinePF, BaseLines)
+  /**
+     * 搜索可用路径
+     * @param base 当前块
+     * @param seq 累计结果序列
+     */
+  const scan = (base: BaseLine, ...seq: BaseLine[]): null | { start: number; bls: BaseLine[] } => {
+    seq.push(base)
+    const idx = BaseLines.indexOf(base)
+    const firstEleStartPos = getStartPos(idx - seq.length)// 序列首个元素的起始位置
+    if (seq[0].y < base.y) { // 碰到到个比初始高的放弃
+      return null
+    }
+    const reduceWidth = seq.reduce((p, c) => p + c.width, 0)
+    if (reduceWidth >= needWidth) { // 得到一组解决方案
+      return {
+        bls: seq,
+        start: firstEleStartPos
+      }
+    }
+    // note('下面的reduceWidth > maxWidth应该加上左边其它元素的宽度')
+    if (firstEleStartPos + reduceWidth > maxWidth) { // 移到最右侧或者放不下 换下一行
+      const nextY = BaseLines.reduce((p, c) => p > c.y ? p : c.y, 0)
+      insertBaseLine({ y: nextY + base.y, width: base.width }, 0)
+      debug(BaseLines, '插入新行后')
+      return {
+        start: 0,
+        bls: [{
+          ...base,
+          y: nextY
+        }]
+      }
+    }
+    return scan(BaseLines[idx + 1], ...seq) // 继续向右找
+  }
+  return scan
+}
+
 type AllocConf = {
   BaseLines: BaseLine[];
   scale: number;
@@ -65,6 +110,7 @@ type AllocConf = {
   maxWidth: number;
   hasInsertFirst: boolean;
 }
+
 const alloc = (conf: AllocConf, curr: windowState) => {
   const { BaseLines, scale, maxWidth } = conf
   const insertBaseLine = curry(insertBaseLinePF, BaseLines)
@@ -74,51 +120,17 @@ const alloc = (conf: AllocConf, curr: windowState) => {
   if (conf.hasInsertFirst === true) {
     const needWidth = size.width
     const availableArea = new Array<{ start: number; baseLine: BaseLine } >()
-    const scan = (base: BaseLine, ...seq: BaseLine[]): null | { start: number; bls: BaseLine[] } => {
-      const idx = BaseLines.indexOf(base)
-      if (
-        seq[0].y < base.y ||// 碰到到个比初始高的放弃
-        idx === -1// 找不到或者是
-      ) {
-        return null
-      }
-      const reduceWidth = [...seq, base].reduce((p, c) => p + c.width, 0)
-      if (reduceWidth >= needWidth) { // 得到一组解决方案
-        return {
-          bls: seq,
-          start: reduceWidth - base.width
-        }
-      }
-      note('下面的reduceWidth > maxWidth应该加上左边其它元素的宽度')
-      if (idx === BaseLines.length - 1 || reduceWidth > maxWidth) { // 移到最右侧或者放不下 换下一行
-        const nextY = BaseLines.reduce((p, c) => p > c.y ? p : c.y, 0)
-        insertBaseLine({ y: nextY, width: maxWidth }, 0)
-        insertBaseLine({ y: nextY + base.y, width: base.width }, 0)
-        debug(BaseLines, '插入新行后')
-        return {
-          start: 0,
-          bls: [{
-            ...base,
-            y: nextY
-          }]
-        }
-      }
-      return scan(BaseLines[idx + 1], ...seq) // 继续向右找
-    }
     for (const base of BaseLines) {
-      const res = scan(base, base)
+      const res = scanPF(BaseLines, maxWidth, needWidth)(base)
       if (res) { // 将求得的解合并
         const width = res.bls.reduce((p, c) => c.width + p, 0) * scale
         availableArea.push({
           baseLine: {
             width: Math.min(width, curr.size.width * scale),
-            y: Math.max(...res.bls.map(x => x.y))
+            y: Math.max(...res.bls.map(x => x.y)) + curr.size.height
           },
           start: res.start
         })
-        if (width === 1120) {
-          console.info(res)
-        }
       }
     }
     if (availableArea.length && availableArea[0].baseLine.y !== 0) {
@@ -134,8 +146,8 @@ const alloc = (conf: AllocConf, curr: windowState) => {
       return null // 没有解，减小比例重试
     }
   } else { // 第一个可以直接放在左上角
-    insertBaseLine({ y: size.height, width: size.width }, 0)
     debug({ y: size.height, width: size.width }, '新插入基线-')
+    insertBaseLine({ y: size.height, width: size.width }, 0)
   }
   conf.hasInsertFirst = true
   return {
