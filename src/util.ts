@@ -92,6 +92,7 @@ export const usePriorityBreakPoint = () => {
 
 export const resetArray = function <T> (arr: Array<T>, ...rest: T[]) {
   arr.splice(0, arr.length, ...rest)
+  return arr
 }
 
 export function curry<T, T1, T2> (fn: (a: T1, b: T2) => T, a: T1): (b: T2) => T;

@@ -2,7 +2,8 @@
   <window-container class="window-manage" :bg-url="bgUrl">
     <calculator/>
     <calendar/>
-    <!--layout/-->
+    <layout/>
+    <layout/>
   </window-container>
 </template>
 

@@ -1,5 +1,6 @@
 
 import { resetArray, curry } from '@/util'
+import { cloneDeep } from 'lodash'
 import { Ref } from 'vue'
 import { windowState } from './window'
 
@@ -18,7 +19,15 @@ export const note = (msg: string) => {
   throw new Error(msg)
 }
 const debug = (x: any, msg = '') => console.log(msg + (msg ? ': \n' : '') + JSON.stringify(x, null, 4))
-export const insertBaseLinePF = (BaseLines: BaseLine[], base: BaseLine, start: number) => {
+
+/**
+ * 插入一条新的基线到一组基线中，返回一个新的基线序列
+ * @param BaseLines 原始基线序列
+ * @param base  插入的基线
+ * @param start 插入起始位置
+ */
+export const insertBaseLinePF = (_BaseLines: BaseLine[], base: BaseLine, start: number) => {
+  const BaseLines = cloneDeep(_BaseLines)
   const allWidth = BaseLines.reduce((p, c) => p + c.width, 0)
   const maxY = BaseLines.reduce((p, c) => p > c.y ? p : c.y, 0)
   if (allWidth <= base.width && maxY <= base.y) {
@@ -61,20 +70,20 @@ export const insertBaseLinePF = (BaseLines: BaseLine[], base: BaseLine, start: n
     BaseLines.splice(BaseLines.findIndex(bl => !bl.width), 1)
   }
   debug(BaseLines, '更新基线')
+  return BaseLines
 }
 
 export const scanPF = (BaseLines: BaseLine[], maxWidth: number, needWidth: number) => {
   const getStartPos = curry(getStartPosPF, BaseLines)
-  const insertBaseLine = curry(insertBaseLinePF, BaseLines)
   /**
      * 搜索可用路径
      * @param base 当前块
      * @param seq 累计结果序列
      */
-  const scan = (base: BaseLine, ...seq: BaseLine[]): null | { start: number; bls: BaseLine[] } => {
+  const scan = (base: BaseLine, ...seq: BaseLine[]): null | { start: number; bls: BaseLine[]} => {
     seq.push(base)
     const idx = BaseLines.indexOf(base)
-    const firstEleStartPos = getStartPos(idx - seq.length)// 序列首个元素的起始位置
+    const firstEleStartPos = getStartPos(idx - (seq.length - 1))// 序列首个元素的起始位置
     if (seq[0].y < base.y) { // 碰到到个比初始高的放弃
       return null
     }
@@ -85,15 +94,12 @@ export const scanPF = (BaseLines: BaseLine[], maxWidth: number, needWidth: numbe
         start: firstEleStartPos
       }
     }
-    // note('下面的reduceWidth > maxWidth应该加上左边其它元素的宽度')
-    if (firstEleStartPos + reduceWidth > maxWidth) { // 移到最右侧或者放不下 换下一行
+    if (idx >= BaseLines.length - 1 || firstEleStartPos + reduceWidth > maxWidth) { // 移到最右侧或者放不下 换下一行
       const nextY = BaseLines.reduce((p, c) => p > c.y ? p : c.y, 0)
-      insertBaseLine({ y: nextY + base.y, width: base.width }, 0)
-      debug(BaseLines, '插入新行后')
       return {
         start: 0,
         bls: [{
-          ...base,
+          width: needWidth,
           y: nextY
         }]
       }
@@ -124,6 +130,7 @@ const alloc = (conf: AllocConf, curr: windowState) => {
       const res = scanPF(BaseLines, maxWidth, needWidth)(base)
       if (res) { // 将求得的解合并
         const width = res.bls.reduce((p, c) => c.width + p, 0) * scale
+        debug({ res, curr })
         availableArea.push({
           baseLine: {
             width: Math.min(width, curr.size.width * scale),
@@ -137,17 +144,19 @@ const alloc = (conf: AllocConf, curr: windowState) => {
       const res = availableArea.sort((a, b) => a.baseLine.y - b.baseLine.y)[0] // 存在多种解，取最优解
       console.info(availableArea)
       x = res.start
-      y = res.baseLine.y
+      y = res.baseLine.y - curr.size.height
       debug(res, '新插入基线')
       debug(curr)
       // 根据解来修改基线，进行下次分配
-      insertBaseLine(res.baseLine, res.start)
+      const newBaseLine = insertBaseLine(res.baseLine, res.start)
+      resetArray(BaseLines, ...newBaseLine)
     } else {
       return null // 没有解，减小比例重试
     }
   } else { // 第一个可以直接放在左上角
     debug({ y: size.height, width: size.width }, '新插入基线-')
-    insertBaseLine({ y: size.height, width: size.width }, 0)
+    const res = insertBaseLine({ y: size.height, width: size.width }, 0)
+    resetArray(BaseLines, ...res)
   }
   conf.hasInsertFirst = true
   return {
