@@ -3,6 +3,11 @@
     <calculator/>
     <calendar/>
     <layout/>
+    <calculator/>
+    <calendar/>
+    <layout/>
+    <calculator/>
+    <calendar/>
     <layout/>
   </window-container>
 </template>

@@ -26,7 +26,7 @@ export default defineComponent({
     const windows = reactive(new Array<windowState>())
     const bodyRect = ref<DOMRect>()
     const ro = new ResizeObserver(body => {
-      bodyRect.value = body[0].contentRect
+      bodyRect.value = body[0].target.getBoundingClientRect()
     })
     provide('windows', windows)
     provide('window-regist', (window: windowState) => {
@@ -38,7 +38,6 @@ export default defineComponent({
       if (dom) {
         ro.observe(dom)
         setTimeout(() => {
-          // console.log(bodyRect)
           useAutoLayout(windows, bodyRect)
         }, 0)
       }
