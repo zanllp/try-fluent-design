@@ -62,8 +62,9 @@ import {
 import { debounce } from 'lodash'
 import { addCallBack } from '@/callbackPoll'
 import { Size, AnyBlockState, getIncrementId } from '@/util'
+import { windowState } from './window'
 
-const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: number }>) => {
+const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: number }>, state?: windowState) => {
   type state = {
     rect: {
       width: number;
@@ -105,6 +106,9 @@ const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: nu
     svgStateStack.delete('start')
   }
   const cursorMove = (e: MouseEvent) => {
+    if (state?.scale !== 1) {
+      return
+    }
     const svg = svgRef.value
     if (svgStateStack.has('start') && svg) {
       const rect = svg.getBoundingClientRect()
@@ -130,7 +134,13 @@ const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: nu
       }))
     return res
   })
-  const isStart = computed(() => svgStateStack.has('start'))
+  const isStart = computed(() => {
+    // 缩放时不需要等效
+    if (state?.scale !== 1) {
+      return false
+    }
+    return svgStateStack.has('start')
+  })
   return {
     layout,
     svgCursorPercent,
@@ -175,6 +185,7 @@ const useProvider = (blocks: Array<AnyBlockState>) => {
 export default defineComponent({
   name: 'blockContainer',
   setup () {
+    const state = inject<windowState>('window-state')
     const id = getIncrementId('block-container')
     const initOffset = { top: 0, left: 0 }
     const windowSize = ref({ width: 200, height: 200 })
@@ -190,7 +201,7 @@ export default defineComponent({
       isStart,
       maxSide,
       svgObserver
-    } = useSvg(windowSize, windowOffset)
+    } = useSvg(windowSize, windowOffset, state)
     const { updateQuene } = useProvider(blocks)
     const refreshMask = debounce(() => {
       updateQuene.forEach(val => val.cb())

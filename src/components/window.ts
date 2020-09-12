@@ -16,6 +16,7 @@ export const useInitState = (initPos: Pos, name: string, size: Size) => {
     flagSet: new Set<StateFlag>(),
     initPos,
     name,
+    scale: 1,
     id: getIncrementId('window')
   })
 }
@@ -30,7 +31,7 @@ export const useWindowWrapStyle = (state: windowState) => {
     }
     return `
           background-position:${bgPos.left}px ${bgPos.top}px;
-          transform:translate(${s.offset.left}px,${s.offset.top}px);
+          transform:translate(${s.offset.left}px,${s.offset.top}px) scale(${s.scale});
           cursor:${cursorMap[Array.from(s.flagSet.keys())[0]]};
           width:${s.size.width}px;
           height:${s.size.height}px;

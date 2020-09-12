@@ -8,11 +8,11 @@ export type BaseLine = { y: number; width: number }
 
 /**
  * 获取指定块在目标基线序列中的起始位置
- * @param BaseLines 基线序列
+ * @param baselines 基线序列
  * @param index 目标基线索引
  */
-export const getStartPosPF = (BaseLines: BaseLine[], index: number) => {
-  return BaseLines.slice(0, index).reduce((p, c) => p + c.width, 0)
+export const getStartPosPF = (baselines: BaseLine[], index: number) => {
+  return baselines.slice(0, index).reduce((p, c) => p + c.width, 0)
 }
 
 export const note = (msg: string) => {
@@ -26,28 +26,28 @@ const debug = (x: any, msg = '', enable = false) => {
 
 /**
  * 插入一条新的基线到一组基线中，返回一个新的基线序列
- * @param BaseLines 原始基线序列
+ * @param baselines 原始基线序列
  * @param base  插入的基线
  * @param start 插入起始位置
  */
-export const insertBaseLinePF = (_BaseLines: BaseLine[], base: BaseLine, start: number) => {
-  const BaseLines = cloneDeep(_BaseLines)
-  const allWidth = BaseLines.reduce((p, c) => p + c.width, 0)
-  const maxY = BaseLines.reduce((p, c) => p > c.y ? p : c.y, 0)
+export const insertBaseLinePF = (_baselines: BaseLine[], base: BaseLine, start: number) => {
+  const baselines = cloneDeep(_baselines)
+  const allWidth = baselines.reduce((p, c) => p + c.width, 0)
+  const maxY = baselines.reduce((p, c) => p > c.y ? p : c.y, 0)
   if (allWidth <= base.width && maxY <= base.y) {
-    return resetArray(BaseLines, base)
+    return resetArray(baselines, base)
   }
-  const getStartPos = curry(getStartPosPF, BaseLines)
+  const getStartPos = curry(getStartPosPF, baselines)
   const end = start + base.width
   let startBase: BaseLine | undefined // 插入后的受影响范围
   let endBase: BaseLine | undefined
-  for (let index = 0; index < BaseLines.length; index++) {
-    const curr = BaseLines[index]
-    const currBaseLineStartPos = getStartPos(index) // 前面所有基线加起来的宽度
-    if (!startBase && (currBaseLineStartPos <= start && start <= currBaseLineStartPos + curr.width)) {
+  for (let index = 0; index < baselines.length; index++) {
+    const curr = baselines[index]
+    const currbaselinestartPos = getStartPos(index) // 前面所有基线加起来的宽度
+    if (!startBase && (currbaselinestartPos <= start && start <= currbaselinestartPos + curr.width)) {
       startBase = curr
     }
-    if (currBaseLineStartPos <= end && end <= currBaseLineStartPos + curr.width) {
+    if (currbaselinestartPos <= end && end <= currbaselinestartPos + curr.width) {
       endBase = curr
     }
     if (startBase && endBase) {
@@ -59,8 +59,8 @@ export const insertBaseLinePF = (_BaseLines: BaseLine[], base: BaseLine, start: 
     debug(endBase, 'end-base')
     throw new Error('找不到startBase或endBase')
   }
-  const startIdx = BaseLines.indexOf(startBase)
-  const endIdx = BaseLines.indexOf(endBase)
+  const startIdx = baselines.indexOf(startBase)
+  const endIdx = baselines.indexOf(endBase)
   const newStart: BaseLine = {
     y: startBase.y,
     width: start - getStartPos(startIdx)
@@ -69,17 +69,17 @@ export const insertBaseLinePF = (_BaseLines: BaseLine[], base: BaseLine, start: 
     y: endBase.y,
     width: getStartPos(endIdx) + endBase.width - (getStartPos(startIdx) + newStart.width + base.width)
   }
-  BaseLines.splice(startIdx, endIdx - startIdx + 1, newStart, base, newEnd)
-  while (BaseLines.find(bl => !bl.width)) {
-    BaseLines.splice(BaseLines.findIndex(bl => bl.width < 1), 1)
+  baselines.splice(startIdx, endIdx - startIdx + 1, newStart, base, newEnd)
+  while (baselines.find(bl => !bl.width)) {
+    baselines.splice(baselines.findIndex(bl => bl.width < 1), 1)
   }
-  debug(BaseLines, '更新基线')
-  return BaseLines
+  debug(baselines, '更新基线')
+  return baselines
 }
 
 export const scanPF = (conf: AllocConf, needWidth: number) => {
-  const { BaseLines, maxWidth } = conf
-  const getStartPos = curry(getStartPosPF, BaseLines)
+  const { baselines, maxWidth } = conf
+  const getStartPos = curry(getStartPosPF, baselines)
   /**
      * 搜索可用路径
      * @param base 当前块
@@ -87,7 +87,7 @@ export const scanPF = (conf: AllocConf, needWidth: number) => {
      */
   const scan = (base: BaseLine, ...seq: BaseLine[]): null | { start: number; bls: BaseLine[] } => {
     seq.push(base)
-    const idx = BaseLines.indexOf(base)
+    const idx = baselines.indexOf(base)
     const firstEleStartPos = getStartPos(idx - (seq.length - 1))// 序列首个元素的起始位置
     if (seq[0].y < base.y) { // 碰到到个比初始高的放弃
       return null
@@ -99,8 +99,8 @@ export const scanPF = (conf: AllocConf, needWidth: number) => {
         start: firstEleStartPos
       }
     }
-    if (idx + 1 === BaseLines.length || firstEleStartPos + reduceWidth > maxWidth) { // 移到最右侧或者放不下 换下一行
-      const nextY = BaseLines.reduce((p, c) => p > c.y ? p : c.y, 0)
+    if (idx + 1 === baselines.length || firstEleStartPos + reduceWidth > maxWidth) { // 移到最右侧或者放不下 换下一行
+      const nextY = baselines.reduce((p, c) => p > c.y ? p : c.y, 0)
       return {
         start: 0,
         bls: [{
@@ -109,35 +109,37 @@ export const scanPF = (conf: AllocConf, needWidth: number) => {
         }]
       }
     }
-    return scan(BaseLines[idx + 1], ...seq) // 继续向右找
+    return scan(baselines[idx + 1], ...seq) // 继续向右找
   }
   return scan
 }
 
 type AllocConf = {
-  BaseLines: BaseLine[];
+  baselines: BaseLine[];
   scale: number;
   maxHeight: number;
   maxWidth: number;
+  margin: number;
   hasInsertFirst: boolean;
 }
 
 const alloc = (conf: AllocConf, curr: windowState) => {
-  const { BaseLines, scale } = conf
-  const insertBaseLine = curry(insertBaseLinePF, BaseLines)
+  const { baselines, scale, margin } = conf
+  const insertBaseLine = curry(insertBaseLinePF, baselines)
   let x = 0
   let y = 0
   const { size } = curr
   if (conf.hasInsertFirst === true) {
-    const needWidth = size.width * scale
+    const needWidth = size.width * scale + margin * 2
     const availableArea = new Array<{ start: number; baseLine: BaseLine }>()
-    for (const base of BaseLines) {
+    for (const base of baselines) {
       const res = scanPF(conf, needWidth)(base)
       if (res) { // 将求得的解合并
         availableArea.push({
           baseLine: {
             width: needWidth,
-            y: Math.max(...res.bls.map(x => x.y)) + curr.size.height * scale
+            // 旧基线 + 窗口高度 + 外边距
+            y: Math.max(...res.bls.map(x => x.y)) + curr.size.height * scale + margin * 2
           },
           start: res.start
         })
@@ -146,20 +148,22 @@ const alloc = (conf: AllocConf, curr: windowState) => {
     if (availableArea.length && availableArea[0].baseLine.y !== 0) {
       const res = availableArea.sort((a, b) => a.baseLine.y - b.baseLine.y)[0] // 存在多种解，取最优解
       x = res.start
-      y = res.baseLine.y - curr.size.height * scale
+      y = res.baseLine.y - curr.size.height * scale - margin * 2
       if (res.baseLine.y > conf.maxHeight) { // 超出边界，减小比例重新分配
         return null
       }
       // 接受这个解并修改基线，进行下次分配
       const newBaseLine = insertBaseLine(res.baseLine, res.start)
-      resetArray(BaseLines, ...newBaseLine)
+      resetArray(baselines, ...newBaseLine)
     } else {
       return null // 没有解，减小比例重试
     }
   } else { // 第一个可以直接放在左上角
-    debug({ y: size.height * scale, width: size.width * scale }, '新插入基线-')
-    const res = insertBaseLine({ y: size.height * scale, width: size.width * scale }, 0)
-    resetArray(BaseLines, ...res)
+    const y = size.height * scale + margin * 2
+    const width = size.width * scale
+    debug({ y, width }, '新插入基线-')
+    const res = insertBaseLine({ y, width }, 0)
+    resetArray(baselines, ...res)
   }
   conf.hasInsertFirst = true
   return {
@@ -171,19 +175,26 @@ const alloc = (conf: AllocConf, curr: windowState) => {
 
 export const useAutoLayout = (_windows: windowState[], bodyRect: Ref<DOMRect | undefined>) => {
   const body = bodyRect.value
-  const margin = 16
-  const gutter = 16
+  const containerPadding = 16
+  const windowMargin = 8
   if (!body) {
     return
   }
   type Layout = { bind: windowState; scale: number; x: number; y: number }
   const res = new Array<Layout>()
-  const availableWidth = body.width
-  const availableHeight = body.height
-  const BaseLines: BaseLine[] = [{ y: 0, width: availableWidth }]
-  debug(BaseLines, '初始基线')
+  const availableWidth = body.width - containerPadding * 2
+  const availableHeight = body.height - containerPadding * 2
+  const baselines: BaseLine[] = [{ y: 0, width: availableWidth }]
+  debug(baselines, '初始基线')
   const windows = [..._windows]
-  const conf: AllocConf = { BaseLines, scale: 1, maxWidth: availableWidth, maxHeight: availableHeight, hasInsertFirst: false }
+  const conf: AllocConf = {
+    baselines,
+    scale: 1,
+    maxWidth: availableWidth,
+    maxHeight: availableHeight,
+    hasInsertFirst: false,
+    margin: windowMargin
+  }
   while (windows.length) {
     const curr = windows.shift()
     if (!curr) {
@@ -196,7 +207,7 @@ export const useAutoLayout = (_windows: windowState[], bodyRect: Ref<DOMRect | u
       conf.scale -= 0.05
       resetArray(windows, ..._windows)
       resetArray(res)
-      resetArray(BaseLines, { y: 0, width: availableWidth })
+      resetArray(baselines, { y: 0, width: availableWidth })
       if (conf.scale < 0) {
         throw new Error('分配异常')
       }
@@ -209,12 +220,11 @@ export const useAutoLayout = (_windows: windowState[], bodyRect: Ref<DOMRect | u
       left: 0
     }
     bind.offset = {
-      top: w.y,
-      left: w.x
+      top: w.y + containerPadding + windowMargin - w.bind.size.height * (1 - w.scale) / 2,
+      left: w.x + containerPadding + windowMargin - w.bind.size.width * (1 - w.scale) / 2
     }
-    bind.size.height *= w.scale
-    bind.size.width *= w.scale
+    bind.scale = w.scale
   })
-  debug(BaseLines, '结束')
+  debug(baselines, '结束')
   debug(res)
 }

@@ -1,5 +1,5 @@
 <template>
-  <window name="计算器" :dark="false" :size="{ height: 384, width: 476 }">
+  <window name="计算器" :dark="false" :size="{ height: 384, width: 512 }">
     <block-container>
       <div class="temp-area">{{tempText}}</div>
       <div class="display-area">{{ displayText}}</div>

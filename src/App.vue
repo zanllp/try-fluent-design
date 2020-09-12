@@ -19,7 +19,7 @@ import { createArray } from './util'
 import calculator from '@/example/calculator.vue'
 import calendar from '@/example/calendar.vue'
 import layout from '@/example/reactive-layout.vue'
-const bgUrl = 'https://static.ioflow.link/0cfedb5240eadc505e723bf2bc4f14e8bf7eb3fb96fc6ea53e856f3f863c2ba0d38f83de492f609290bc6ad0a9a2b583.jpg_'
+const bgUrl = 'https://static.ioflow.link/0cfedb5240eadc505e723bf2bc4f14e8bf7eb3fb96fc6ea53e856f3f863c2ba0d38f83de492f609290bc6ad0a9a2b583.jpg'
 export default defineComponent({
   components: {
     calculator,

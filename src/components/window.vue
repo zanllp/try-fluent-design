@@ -55,6 +55,7 @@ export default defineComponent({
     const { move, control, release } = useWindowControl(state)
     provide('window-size', state.size)
     provide('window-offset', state.offset)
+    provide('window-state', state)
     const windowRegist = inject<(window: typeof state) => void>('window-regist')
     onMounted(() => {
       addCallBack('mousemove', move)
