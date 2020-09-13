@@ -1,7 +1,7 @@
 
 import { resetArray, curry } from '@/util'
 import { cloneDeep } from 'lodash'
-import { Ref } from 'vue'
+import { Ref, watch } from 'vue'
 import { windowState } from './window'
 
 export type BaseLine = { y: number; width: number }
@@ -173,8 +173,18 @@ const alloc = (conf: AllocConf, curr: windowState) => {
   }
 }
 
-export const useAutoLayout = (_windows: windowState[], bodyRect: Ref<DOMRect | undefined>) => {
-  const body = bodyRect.value
+export type ContainersState = {
+  windows: windowState[];
+  bodyRect: DOMRect | null;
+  windowTriggerPool: Map<'click', windowState[]>;
+  flagSet: Set<'window-switch'>;
+}
+
+export const useAutoLayout = (state: ContainersState) => {
+  const _windows = state.windows
+  const { bodyRect } = state
+  const stateBackup = cloneDeep(_windows)
+  const body = bodyRect
   const containerPadding = 16
   const windowMargin = 8
   if (!body) {
@@ -220,11 +230,41 @@ export const useAutoLayout = (_windows: windowState[], bodyRect: Ref<DOMRect | u
       left: 0
     }
     bind.offset = {
-      top: w.y + containerPadding + windowMargin - w.bind.size.height * (1 - w.scale) / 2,
-      left: w.x + containerPadding + windowMargin - w.bind.size.width * (1 - w.scale) / 2
+      top: w.y + containerPadding + windowMargin,
+      left: w.x + containerPadding + windowMargin
     }
     bind.scale = w.scale
   })
+  state.flagSet.add('window-switch')
   debug(baselines, '结束')
   debug(res)
+  const stop = watch(state.windowTriggerPool, val => {
+    let ts = 0
+    // eslint-disable-next-line no-unused-expressions
+    val.get('click')?.forEach(trigger => {
+      const original = stateBackup.find(s => s.id === trigger.id)!
+      const restore = (n: number) => {
+        if (ts === 0) {
+          ts = n
+        }
+        console.log(1)
+        // trigger.scale += (n - ts) / 500
+        res.forEach(s => {
+          const p = ((n - ts) / 500)
+          s.bind.scale += p
+        })
+        ts = n
+        if (trigger.scale <= 1) {
+          requestAnimationFrame(restore)
+        } else {
+          // trigger.scale = 1
+          res.forEach(s => (s.bind.scale = 1))
+        }
+      }
+      requestAnimationFrame(restore)
+    })
+    val.delete('click')
+    state.flagSet.delete('window-switch')
+    stop()
+  })
 }

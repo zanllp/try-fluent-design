@@ -5,6 +5,7 @@
     @mousedown.left="control"
     @mouseup.left="release"
     @mouseleave="release"
+    :data-window-switch="state.scale !== 1"
   >
     <div class="blur-layer">
       <div class="color-layer" :style="colorLayerStyle">
@@ -55,7 +56,7 @@ export default defineComponent({
     const { move, control, release } = useWindowControl(state)
     provide('window-size', state.size)
     provide('window-offset', state.offset)
-    provide('window-state', state)
+    provide('window-state', ref(state))
     const windowRegist = inject<(window: typeof state) => void>('window-regist')
     onMounted(() => {
       addCallBack('mousemove', move)
@@ -78,7 +79,8 @@ export default defineComponent({
       colorLayerStyle,
       release,
       control,
-      darkMode
+      darkMode,
+      state
     }
   }
 })
@@ -90,6 +92,10 @@ export default defineComponent({
   background: inherit;
   overflow: hidden;
   border: 2px solid #aaa;
+  &:hover[data-window-switch='true'] {
+    border: 2px solid white;
+    cursor: pointer;
+  }
   .blur-layer {
     position: relative;
     top: -16px;

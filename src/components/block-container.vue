@@ -106,7 +106,7 @@ const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: nu
     svgStateStack.delete('start')
   }
   const cursorMove = (e: MouseEvent) => {
-    if (state?.scale !== 1) {
+    if (state && state.scale !== 1) {
       return
     }
     const svg = svgRef.value
@@ -135,8 +135,8 @@ const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: nu
     return res
   })
   const isStart = computed(() => {
-    // 缩放时不需要等效
-    if (state?.scale !== 1) {
+    // 缩放时不需要灯效
+    if (state && state.scale !== 1) {
       return false
     }
     return svgStateStack.has('start')
@@ -185,7 +185,7 @@ const useProvider = (blocks: Array<AnyBlockState>) => {
 export default defineComponent({
   name: 'blockContainer',
   setup () {
-    const state = inject<windowState>('window-state')
+    const state = inject<Ref<windowState>>('window-state')
     const id = getIncrementId('block-container')
     const initOffset = { top: 0, left: 0 }
     const windowSize = ref({ width: 200, height: 200 })
@@ -201,7 +201,7 @@ export default defineComponent({
       isStart,
       maxSide,
       svgObserver
-    } = useSvg(windowSize, windowOffset, state)
+    } = useSvg(windowSize, windowOffset, state?.value)
     const { updateQuene } = useProvider(blocks)
     const refreshMask = debounce(() => {
       updateQuene.forEach(val => val.cb())
@@ -224,7 +224,7 @@ export default defineComponent({
       }
       svgObserver.mounted()
       if (windowSize.value) {
-        watch(() => windowSize.value, refreshMask, {
+        watch(() => state?.value.scale && windowSize.value, refreshMask, {
           deep: true,
           immediate: true
         })

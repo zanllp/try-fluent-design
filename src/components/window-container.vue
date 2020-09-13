@@ -9,7 +9,7 @@
 import { defineComponent, provide, reactive, ref, computed, Ref, onMounted } from 'vue'
 import { windowState } from './window'
 import { getCallBackQuene } from '@/callbackPoll'
-import { useAutoLayout } from './window-container'
+import { ContainersState, useAutoLayout } from './window-container'
 import sidebar from './sidebar.vue'
 export default defineComponent({
   name: 'window-container',
@@ -23,14 +23,26 @@ export default defineComponent({
     sidebar
   },
   setup (props) {
-    const windows = reactive(new Array<windowState>())
-    const bodyRect = ref<DOMRect>()
-    const ro = new ResizeObserver(body => {
-      bodyRect.value = body[0].target.getBoundingClientRect()
+    const state: ContainersState = reactive({
+      windowTriggerPool: new Map<'click', windowState[]>(),
+      bodyRect: null,
+      windows: new Array<windowState>(),
+      flagSet: new Set()
     })
-    provide('windows', windows)
+    provide('add-trigger-window', (type: 'click', winstate: windowState) => {
+      const quene = state.windowTriggerPool.get('click')
+      if (quene) {
+        quene.push(winstate)
+      } else {
+        state.windowTriggerPool.set('click', [winstate])
+      }
+    })
+    const ro = new ResizeObserver(body => {
+      state.bodyRect = body[0].target.getBoundingClientRect()
+    })
+    provide('windows', state.windows)
     provide('window-regist', (window: windowState) => {
-      windows.push(window)
+      state.windows.push(window)
     })
     const selfRef = ref<HTMLDivElement | null>(null)
     onMounted(() => {
@@ -38,7 +50,7 @@ export default defineComponent({
       if (dom) {
         ro.observe(dom)
         setTimeout(() => {
-          useAutoLayout(windows, bodyRect)
+          useAutoLayout(state)
         }, 0)
       }
     })
