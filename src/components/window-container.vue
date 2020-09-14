@@ -1,12 +1,12 @@
 <template>
   <div class="window-container" ref="selfRef" @mousemove="onMouseMove" :style="style">
     <slot></slot>
-    <sidebar />
+    <sidebar :container-state="state"/>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, provide, reactive, ref, computed, Ref, onMounted } from 'vue'
+import { defineComponent, provide, reactive, ref, computed, onMounted } from 'vue'
 import { windowState } from './window'
 import { getCallBackQuene } from '@/callbackPoll'
 import { ContainersState, useAutoLayout } from './window-container'
@@ -62,7 +62,8 @@ export default defineComponent({
       window,
       selfRef,
       onMouseMove,
-      style
+      style,
+      state
     }
   }
 })

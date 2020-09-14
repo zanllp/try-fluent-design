@@ -1,8 +1,8 @@
 import { computed, inject, reactive } from 'vue'
 import { getIncrementId, Size } from '@/util'
 
-export type StateFlag = 'start' | 'resize'
-const cursorMap: { [k in StateFlag]: string } = {
+export type StateFlag = 'start' | 'resize' | 'animal' | 'ani-delay' | 'tile'
+const cursorMap: { [k in StateFlag]?: string } = {
   start: 'move',
   resize: 'nwse-resize'
 }
@@ -17,7 +17,8 @@ export const useInitState = (initPos: Pos, name: string, size: Size) => {
     initPos,
     name,
     scale: 1,
-    id: getIncrementId('window')
+    id: getIncrementId('window'),
+    styles: new Array<string>()
   })
 }
 export type windowState = ReturnType<typeof useInitState>
@@ -29,17 +30,25 @@ export const useWindowWrapStyle = (state: windowState) => {
       top: (-s.offset.top - s.initPos.top) / state.scale - 2 + 16,
       left: (-s.offset.left - s.initPos.left) / state.scale - 2 + 16
     }
-    return `
-          background-position:${bgPos.left}px ${bgPos.top}px;
-          transform:translate(${s.offset.left}px,${s.offset.top}px) scale(${s.scale});
-          cursor:${cursorMap[Array.from(s.flagSet.keys())[0]]};
-          width:${s.size.width}px;
-          height:${s.size.height}px;
-          top:${s.initPos.top}px;
-          left:${s.initPos.left}px;
-          z-index:${s.zIndex};
-          background-size:${(1 / state.scale) * 100}vw;
-          transform-origin: top left;`
+    const styleList = new Array<string>()
+    styleList.push(`
+    background-position:${bgPos.left}px ${bgPos.top}px;
+    transform:translate(${s.offset.left}px,${s.offset.top}px) scale(${s.scale});
+    cursor:${cursorMap[Array.from(s.flagSet.keys())[0]]};
+    width:${s.size.width}px;
+    height:${s.size.height}px;
+    top:${s.initPos.top}px;
+    left:${s.initPos.left}px;
+    z-index:${s.zIndex};
+    background-size:${(1 / state.scale) * 100}vw;
+    transform-origin: top left;`)
+    if (state.flagSet.has('animal')) {
+      styleList.push('transition: all .7s ease-in-out')
+    }
+    if (state.flagSet.has('ani-delay')) {
+      styleList.push('transition-delay: 3s')
+    }
+    return [...state.styles, ...styleList].join(';')
   })
   return {
     style
@@ -58,6 +67,7 @@ export const useWindowControl = (state: windowState) => {
     addTrigrWindow && addTrigrWindow('click', state)
     state.flagSet.add('start')
     if (state.zIndex < maxZIndex) {
+      console.log(state.flagSet.has('animal'))
       state.zIndex = maxZIndex + 1 // 让点击到窗口保持在最上层
       maxZIndex = state.zIndex
     }
@@ -65,17 +75,23 @@ export const useWindowControl = (state: windowState) => {
   const stateStack = new Array<Array<StateFlag>>()
   const s = state
   const release = (e: MouseEvent) => {
+    if (s.flagSet.has('tile')) {
+      return
+    }
     const { type } = e
     switch (type) {
       case 'mouseleave':
-        !state.flagSet.has('resize') && state.flagSet.clear()
+        !s.flagSet.has('resize') && s.flagSet.clear()
         break
       case 'mouseup':
-        state.flagSet.clear()
+        s.flagSet.clear()
         break
     }
   }
   const move = (e: MouseEvent) => {
+    if (s.flagSet.has('tile')) {
+      return
+    }
     if (s.flagSet.has('start')) {
       if (s.flagSet.has('resize')) {
         s.size.width += e.movementX

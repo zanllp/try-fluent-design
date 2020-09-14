@@ -1,9 +1,8 @@
 
 import { resetArray, curry } from '@/util'
 import { cloneDeep } from 'lodash'
-import { Ref, watch } from 'vue'
+import { watch } from 'vue'
 import { windowState } from './window'
-
 export type BaseLine = { y: number; width: number }
 
 /**
@@ -180,20 +179,89 @@ export type ContainersState = {
   flagSet: Set<'window-switch'>;
 }
 
+type Layout = { bind: windowState; scale: number; x: number; y: number }
+
+const watchExpandTrigger = (state: ContainersState, res: Layout[], stateBackup: windowState[]) => {
+  const stop = watch(state.windowTriggerPool, val => {
+    const getPrevCurrForeach = () => {
+      const pc = res
+        .map(s => ({ e: stateBackup.find(backup => backup.id === s.bind.id)!, s }))
+      return pc.forEach.bind(pc)
+    }
+    val.get('click')?.forEach(() => {
+      getPrevCurrForeach()(({ s, e }) => {
+        s.bind.flagSet.add('animal')
+        s.bind.flagSet.delete('start')
+        s.bind.scale = e.scale
+        s.bind.initPos = e.initPos
+        s.bind.offset = e.offset
+      })
+      setTimeout(() => {
+        getPrevCurrForeach()(({ s }) => {
+          s.bind.flagSet.delete('tile')
+          s.bind.flagSet.delete('animal')
+        })
+      }, 700)
+    })
+    val.delete('click')
+    state.flagSet.delete('window-switch')
+    stop()
+  })
+}
+
+type Padding = { top: number; left: number; right: number; bottom: number }
+const startTileAnimal = (res: Layout[], containerPadding: Padding, windowMargin: number, state: ContainersState) => {
+  const se = res.map(start => {
+    const end = cloneDeep(start.bind)
+    end.initPos = {
+      top: 0,
+      left: 0
+    }
+    end.offset = {
+      top: start.y + containerPadding.top + windowMargin,
+      left: start.x + containerPadding.left + windowMargin
+    }
+    end.scale = start.scale
+    return {
+      start,
+      end
+    }
+  })
+  se.forEach(({ start: s, end: e }) => {
+    s.bind.flagSet.delete('start')
+    s.bind.flagSet.add('tile')
+    s.bind.flagSet.add('animal')
+    s.bind.scale = e.scale
+    s.bind.initPos = e.initPos
+    s.bind.offset = e.offset
+  })
+  setTimeout(() => {
+    se.forEach(({ start: s }) => {
+      s.bind.flagSet.delete('animal')
+    }
+    )
+  }, 700)
+  state.flagSet.add('window-switch')
+}
+
 export const useAutoLayout = (state: ContainersState) => {
   const _windows = state.windows
   const { bodyRect } = state
   const stateBackup = cloneDeep(_windows)
   const body = bodyRect
-  const containerPadding = 16
+  const containerPadding = {
+    top: 16,
+    left: 16,
+    right: 128,
+    bottom: 16
+  }
   const windowMargin = 8
   if (!body) {
     return
   }
-  type Layout = { bind: windowState; scale: number; x: number; y: number }
   const res = new Array<Layout>()
-  const availableWidth = body.width - containerPadding * 2
-  const availableHeight = body.height - containerPadding * 2
+  const availableWidth = body.width - containerPadding.left - containerPadding.right
+  const availableHeight = body.height - containerPadding.top - containerPadding.bottom
   const baselines: BaseLine[] = [{ y: 0, width: availableWidth }]
   debug(baselines, '初始基线')
   const windows = [..._windows]
@@ -223,48 +291,8 @@ export const useAutoLayout = (state: ContainersState) => {
       }
     }
   }
-  res.forEach(w => {
-    const { bind } = w
-    bind.initPos = {
-      top: 0,
-      left: 0
-    }
-    bind.offset = {
-      top: w.y + containerPadding + windowMargin,
-      left: w.x + containerPadding + windowMargin
-    }
-    bind.scale = w.scale
-  })
-  state.flagSet.add('window-switch')
+  startTileAnimal(res, containerPadding, windowMargin, state)
   debug(baselines, '结束')
   debug(res)
-  const stop = watch(state.windowTriggerPool, val => {
-    let ts = 0
-    // eslint-disable-next-line no-unused-expressions
-    val.get('click')?.forEach(trigger => {
-      const original = stateBackup.find(s => s.id === trigger.id)!
-      const restore = (n: number) => {
-        if (ts === 0) {
-          ts = n
-        }
-        console.log(1)
-        // trigger.scale += (n - ts) / 500
-        res.forEach(s => {
-          const p = ((n - ts) / 500)
-          s.bind.scale += p
-        })
-        ts = n
-        if (trigger.scale <= 1) {
-          requestAnimationFrame(restore)
-        } else {
-          // trigger.scale = 1
-          res.forEach(s => (s.bind.scale = 1))
-        }
-      }
-      requestAnimationFrame(restore)
-    })
-    val.delete('click')
-    state.flagSet.delete('window-switch')
-    stop()
-  })
+  watchExpandTrigger(state, res, stateBackup)
 }

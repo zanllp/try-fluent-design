@@ -64,7 +64,7 @@ import { addCallBack } from '@/callbackPoll'
 import { Size, AnyBlockState, getIncrementId } from '@/util'
 import { windowState } from './window'
 
-const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: number }>, state?: windowState) => {
+const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: number }>, state?: Ref<windowState>) => {
   type state = {
     rect: {
       width: number;
@@ -77,7 +77,7 @@ const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: nu
   const svgRect = ref<DOMRect>()
   // 太麻烦，暂时不用
   const svgObserver = {
-    ro: new ResizeObserver(_entries => {
+    ro: new ResizeObserver(() => {
       svgRect.value = svgRef.value!.getBoundingClientRect()
     }),
     mounted: () => {
@@ -106,7 +106,7 @@ const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: nu
     svgStateStack.delete('start')
   }
   const cursorMove = (e: MouseEvent) => {
-    if (state && state.scale !== 1) {
+    if (state?.value.flagSet.has('tile')) {
       return
     }
     const svg = svgRef.value
@@ -136,7 +136,7 @@ const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: nu
   })
   const isStart = computed(() => {
     // 缩放时不需要灯效
-    if (state && state.scale !== 1) {
+    if (state?.value.flagSet.has('tile')) {
       return false
     }
     return svgStateStack.has('start')
@@ -201,7 +201,7 @@ export default defineComponent({
       isStart,
       maxSide,
       svgObserver
-    } = useSvg(windowSize, windowOffset, state?.value)
+    } = useSvg(windowSize, windowOffset, state)
     const { updateQuene } = useProvider(blocks)
     const refreshMask = debounce(() => {
       updateQuene.forEach(val => val.cb())
@@ -224,7 +224,7 @@ export default defineComponent({
       }
       svgObserver.mounted()
       if (windowSize.value) {
-        watch(() => state?.value.scale && windowSize.value, refreshMask, {
+        watch([() => state?.value.scale, windowSize], refreshMask, {
           deep: true,
           immediate: true
         })
