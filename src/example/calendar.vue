@@ -1,14 +1,14 @@
 <template>
   <window name="日历" :size="{ height: 550, width: 448 }">
-    <block-container>
+    <reveal-container>
       <div class="profile">
         <div class="action-bar">
-          <block>
+          <reveal>
             <div class="action-icon" @click="onActionBtnClick('decr')">←</div>
-          </block>
-          <block>
+          </reveal>
+          <reveal>
             <div class="action-icon" @click="onActionBtnClick('incr')">→</div>
-          </block>
+          </reveal>
         </div>
         <div class="title">{{day.format('L')}}</div>
       </div>
@@ -16,17 +16,17 @@
         <span v-for="n in 7" :key="n" class="table-cell block-adapter">星期{{bucketsMap[n-1]}}</span>
         <div v-for="(week,idx) in buckets" :key="idx">
           <span v-for="(dayN,dayIdx) in week" :key="dayIdx">
-            <block
+            <reveal
               v-if="dayN !== undefined"
               class="day table-cell"
               :data-now="day.get('date')===dayN"
               @click="onDayBtnClick(dayN)"
-            >{{dayN}}</block>
+            >{{dayN}}</reveal>
             <div v-else class="block-adapter table-cell" />
           </span>
         </div>
       </div>
-    </block-container>
+    </reveal-container>
   </window>
 </template>
 

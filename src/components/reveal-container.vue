@@ -57,13 +57,14 @@ import {
   computed,
   reactive,
   Ref,
-  onUnmounted
+  onUnmounted, toRef
 } from 'vue'
 import { debounce } from 'lodash'
 import { addCallBack } from '@/callbackPoll'
 import { Size, AnyBlockState, getIncrementId } from '@/util'
+import { windowState } from './window'
 
-const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: number }>) => {
+const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: number }>, state?: Ref<windowState>) => {
   type state = {
     rect: {
       width: number;
@@ -76,7 +77,7 @@ const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: nu
   const svgRect = ref<DOMRect>()
   // 太麻烦，暂时不用
   const svgObserver = {
-    ro: new ResizeObserver(_entries => {
+    ro: new ResizeObserver(() => {
       svgRect.value = svgRef.value!.getBoundingClientRect()
     }),
     mounted: () => {
@@ -105,6 +106,9 @@ const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: nu
     svgStateStack.delete('start')
   }
   const cursorMove = (e: MouseEvent) => {
+    if (state?.value.flagSet.has('tile')) {
+      return
+    }
     const svg = svgRef.value
     if (svgStateStack.has('start') && svg) {
       const rect = svg.getBoundingClientRect()
@@ -130,7 +134,13 @@ const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: nu
       }))
     return res
   })
-  const isStart = computed(() => svgStateStack.has('start'))
+  const isStart = computed(() => {
+    // 缩放时不需要灯效
+    if (state?.value.flagSet.has('tile')) {
+      return false
+    }
+    return svgStateStack.has('start')
+  })
   return {
     layout,
     svgCursorPercent,
@@ -173,8 +183,9 @@ const useProvider = (blocks: Array<AnyBlockState>) => {
 }
 
 export default defineComponent({
-  name: 'blockContainer',
+  name: 'reveal-container',
   setup () {
+    const state = inject<Ref<windowState>>('window-state')
     const id = getIncrementId('block-container')
     const initOffset = { top: 0, left: 0 }
     const windowSize = ref({ width: 200, height: 200 })
@@ -190,7 +201,7 @@ export default defineComponent({
       isStart,
       maxSide,
       svgObserver
-    } = useSvg(windowSize, windowOffset)
+    } = useSvg(windowSize, windowOffset, state)
     const { updateQuene } = useProvider(blocks)
     const refreshMask = debounce(() => {
       updateQuene.forEach(val => val.cb())
@@ -213,12 +224,12 @@ export default defineComponent({
       }
       svgObserver.mounted()
       if (windowSize.value) {
-        watch(() => windowSize.value, refreshMask, {
+        watch([state && toRef(state.value, 'flagSet'), windowSize], refreshMask, {
           deep: true,
           immediate: true
         })
       }
-      addCallBack('mousemove', cursorMove)
+      addCallBack('mousemove', debounce(cursorMove))
     })
     onUnmounted(() => {
       svgObserver.unmounted()

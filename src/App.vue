@@ -1,12 +1,27 @@
 <template>
   <window-container class="window-manage" :bg-url="bgUrl">
-    <calculator/>
-    <calendar/>
-    <layout/>
+    <calculator />
+    <calendar />
+    <layout />
+    <calculator />
+    <calendar />
+    <layout />
+    <calculator />
+    <calendar />
+    <layout />
+    <calculator />
+    <calendar />
+    <layout />
+    <calculator />
+    <calendar />
+    <layout />
+    <calculator />
+    <calendar />
+    <layout />
   </window-container>
 </template>
 
-<script lang="ts">
+<script lang="ts">/* eslint-disable vue/no-unused-components */
 import { defineComponent, toRef, reactive } from 'vue'
 import { sharedState } from './store'
 import { createArray } from './util'

@@ -1,16 +1,16 @@
 <template>
   <div class="window-container" ref="selfRef" @mousemove="onMouseMove" :style="style">
     <slot></slot>
-    <sidebar />
+    <sidebar :container-state="state"/>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, provide, reactive, ref, computed } from 'vue'
+import { defineComponent, provide, reactive, ref, computed, onMounted } from 'vue'
 import { windowState } from './window'
 import { getCallBackQuene } from '@/callbackPoll'
+import { ContainersState, useAutoLayout } from './window-container'
 import sidebar from './sidebar.vue'
-
 export default defineComponent({
   name: 'window-container',
   props: {
@@ -23,12 +23,37 @@ export default defineComponent({
     sidebar
   },
   setup (props) {
-    const windows = reactive(new Array<windowState>())
-    provide('windows', windows)
+    const state: ContainersState = reactive({
+      windowTriggerPool: new Map<'click', windowState[]>(),
+      bodyRect: null,
+      windows: new Array<windowState>(),
+      flagSet: new Set()
+    })
+    provide('add-trigger-window', (type: 'click', winstate: windowState) => {
+      const quene = state.windowTriggerPool.get('click')
+      if (quene) {
+        quene.push(winstate)
+      } else {
+        state.windowTriggerPool.set('click', [winstate])
+      }
+    })
+    const ro = new ResizeObserver(body => {
+      state.bodyRect = body[0].target.getBoundingClientRect()
+    })
+    provide('windows', state.windows)
     provide('window-regist', (window: windowState) => {
-      windows.push(window)
+      state.windows.push(window)
     })
     const selfRef = ref<HTMLDivElement | null>(null)
+    onMounted(() => {
+      const dom = selfRef.value
+      if (dom) {
+        ro.observe(dom)
+        setTimeout(() => {
+          useAutoLayout(state)
+        }, 0)
+      }
+    })
     const onMouseMove = (e: MouseEvent) => {
       getCallBackQuene('mousemove').forEach((cb) => cb(e))
     }
@@ -37,7 +62,8 @@ export default defineComponent({
       window,
       selfRef,
       onMouseMove,
-      style
+      style,
+      state
     }
   }
 })
