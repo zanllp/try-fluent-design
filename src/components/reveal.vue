@@ -11,7 +11,7 @@ import { defineComponent, onMounted, inject, ref, onUnmounted } from 'vue'
 import { AnyBlockState } from '@/util'
 
 export default defineComponent({
-  name: 'block',
+  name: 'reveal',
   props: {
     value: {
       type: String

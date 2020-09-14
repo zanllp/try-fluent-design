@@ -43,10 +43,10 @@ export const useWindowWrapStyle = (state: windowState) => {
     background-size:${(1 / state.scale) * 100}vw;
     transform-origin: top left;`)
     if (state.flagSet.has('animal')) {
-      styleList.push('transition: all .7s ease-in-out')
+      styleList.push('transition: all .7s linear')
     }
     if (state.flagSet.has('ani-delay')) {
-      styleList.push('transition-delay: 3s')
+      styleList.push('transition-delay: .1s')
     }
     return [...state.styles, ...styleList].join(';')
   })

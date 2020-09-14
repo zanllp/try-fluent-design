@@ -1,15 +1,15 @@
 <template>
   <window name="计算器" :dark="false" :size="{ height: 384, width: 512 }">
-    <block-container>
+    <reveal-container>
       <div class="temp-area">{{tempText}}</div>
       <div class="display-area">{{ displayText}}</div>
       <div>
-        <block v-for="op in operators" :key="op" class="key-btn op-btn" @click="keydown(op)">{{op}}</block>
+        <reveal v-for="op in operators" :key="op" class="key-btn op-btn" @click="keydown(op)">{{op}}</reveal>
       </div>
       <div>
-        <block v-for="key in numKeys" :key="key" class="key-btn" @click="keydown(key)">{{key}}</block>
+        <reveal v-for="key in numKeys" :key="key" class="key-btn" @click="keydown(key)">{{key}}</reveal>
       </div>
-    </block-container>
+    </reveal-container>
   </window>
 </template>
 

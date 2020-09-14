@@ -183,12 +183,13 @@ type Layout = { bind: windowState; scale: number; x: number; y: number }
 
 const watchExpandTrigger = (state: ContainersState, res: Layout[], stateBackup: windowState[]) => {
   const stop = watch(state.windowTriggerPool, val => {
-    const getPrevCurrForeach = () => {
-      const pc = res
-        .map(s => ({ e: stateBackup.find(backup => backup.id === s.bind.id)!, s }))
-      return pc.forEach.bind(pc)
-    }
     val.get('click')?.forEach(() => {
+      stop()
+      const getPrevCurrForeach = () => {
+        const pc = res
+          .map(s => ({ e: stateBackup.find(backup => backup.id === s.bind.id)!, s }))
+        return pc.forEach.bind(pc)
+      }
       getPrevCurrForeach()(({ s, e }) => {
         s.bind.flagSet.add('animal')
         s.bind.flagSet.delete('start')
@@ -202,15 +203,14 @@ const watchExpandTrigger = (state: ContainersState, res: Layout[], stateBackup: 
           s.bind.flagSet.delete('animal')
         })
       }, 700)
+      val.delete('click')
+      state.flagSet.delete('window-switch')
     })
-    val.delete('click')
-    state.flagSet.delete('window-switch')
-    stop()
   })
 }
 
 type Padding = { top: number; left: number; right: number; bottom: number }
-const startTileAnimal = (res: Layout[], containerPadding: Padding, windowMargin: number, state: ContainersState) => {
+const startTileAnimal = (res: Layout[], containerPadding: Padding, windowMargin: number, state: ContainersState, stateBackup: windowState[]) => {
   const se = res.map(start => {
     const end = cloneDeep(start.bind)
     end.initPos = {
@@ -238,13 +238,16 @@ const startTileAnimal = (res: Layout[], containerPadding: Padding, windowMargin:
   setTimeout(() => {
     se.forEach(({ start: s }) => {
       s.bind.flagSet.delete('animal')
-    }
-    )
+    })
+    watchExpandTrigger(state, res, stateBackup)
   }, 700)
   state.flagSet.add('window-switch')
 }
 
 export const useAutoLayout = (state: ContainersState) => {
+  if (state.flagSet.has('window-switch')) {
+    return
+  }
   const _windows = state.windows
   const { bodyRect } = state
   const stateBackup = cloneDeep(_windows)
@@ -252,7 +255,7 @@ export const useAutoLayout = (state: ContainersState) => {
   const containerPadding = {
     top: 16,
     left: 16,
-    right: 128,
+    right: 160,
     bottom: 16
   }
   const windowMargin = 8
@@ -291,8 +294,7 @@ export const useAutoLayout = (state: ContainersState) => {
       }
     }
   }
-  startTileAnimal(res, containerPadding, windowMargin, state)
+  startTileAnimal(res, containerPadding, windowMargin, state, stateBackup)
   debug(baselines, '结束')
   debug(res)
-  watchExpandTrigger(state, res, stateBackup)
 }

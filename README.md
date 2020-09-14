@@ -7,7 +7,7 @@
 ![](./doc-img/move.gif)
 ### 窗口尺寸改变
 ![](./doc-img/resize.gif)
-### 探照灯?
+### reveal
 ![](./doc-img/glow.gif)
 ### 响应式24栏栅格
 支持xs,sm,md,lg,xl五种尺寸,断点尺寸响应window组件的宽度变化，而不是视口的宽度

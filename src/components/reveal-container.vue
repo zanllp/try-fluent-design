@@ -57,7 +57,7 @@ import {
   computed,
   reactive,
   Ref,
-  onUnmounted
+  onUnmounted, toRef
 } from 'vue'
 import { debounce } from 'lodash'
 import { addCallBack } from '@/callbackPoll'
@@ -183,7 +183,7 @@ const useProvider = (blocks: Array<AnyBlockState>) => {
 }
 
 export default defineComponent({
-  name: 'blockContainer',
+  name: 'reveal-container',
   setup () {
     const state = inject<Ref<windowState>>('window-state')
     const id = getIncrementId('block-container')
@@ -224,7 +224,7 @@ export default defineComponent({
       }
       svgObserver.mounted()
       if (windowSize.value) {
-        watch([() => state?.value.scale, windowSize], refreshMask, {
+        watch([state && toRef(state.value, 'flagSet'), windowSize], refreshMask, {
           deep: true,
           immediate: true
         })
