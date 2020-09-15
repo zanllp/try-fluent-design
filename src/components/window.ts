@@ -33,17 +33,15 @@ export const useWindowWrapStyle = (state: windowState) => {
     const styleList = new Array<string>()
     styleList.push(`
     background-position:${bgPos.left}px ${bgPos.top}px;
-    transform:translate(${s.offset.left}px,${s.offset.top}px) scale(${s.scale});
+    transform:translate(${s.offset.left + s.initPos.left}px,${s.offset.top + s.initPos.top}px) scale(${s.scale});
     cursor:${cursorMap[Array.from(s.flagSet.keys())[0]]};
     width:${s.size.width}px;
     height:${s.size.height}px;
-    top:${s.initPos.top}px;
-    left:${s.initPos.left}px;
     z-index:${s.zIndex};
     background-size:${(1 / state.scale) * 100}vw;
     transform-origin: top left;`)
     if (state.flagSet.has('animal')) {
-      styleList.push('transition: all .7s linear')
+      styleList.push('transition: all .7s ease')
     }
     if (state.flagSet.has('ani-delay')) {
       styleList.push('transition-delay: .1s')

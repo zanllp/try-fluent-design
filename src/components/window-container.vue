@@ -77,5 +77,6 @@ export default defineComponent({
   overflow: auto;
   padding: 128px;
   box-sizing: border-box;
+  position: relative;
 }
 </style>
