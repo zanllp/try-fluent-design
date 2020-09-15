@@ -87,11 +87,14 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 .container-wrap {
+  position: absolute;
   user-select: none;
   position: fixed;
   background: inherit;
   overflow: hidden;
   border: 2px solid #aaa;
+  top: 0;
+  left: 0;
   &:hover[data-window-switch='true'] {
     border: 2px solid white;
     cursor: pointer;
