@@ -11,13 +11,11 @@ import { windowState } from './window'
 import { getCallBackQuene } from '@/callbackPoll'
 import { ContainersState, useAutoLayout } from './window-container'
 import sidebar from './sidebar.vue'
+import { customPropsType } from '../util'
 export default defineComponent({
   name: 'window-container',
   props: {
-    bgUrl: {
-      type: String,
-      required: true
-    }
+    bgUrl: customPropsType<string>()
   },
   components: {
     sidebar

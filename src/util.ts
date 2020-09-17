@@ -1,5 +1,5 @@
 import { sharedState } from './store'
-import { inject, computed, readonly } from 'vue'
+import { inject, computed, readonly, Prop, PropType } from 'vue'
 
 export const num2color = (c: number) => {
   const r = c >> 16
@@ -16,7 +16,6 @@ export type BlockState = {
 }
 export type Size = BlockState['rect']
 export type AnyBlockState = {
-  value?: string;
   rect: DOMRect | null;
   id: number;
 }
@@ -99,4 +98,39 @@ export function curry<T, T1, T2> (fn: (a: T1, b: T2) => T, a: T1): (b: T2) => T;
 export function curry<T, T1, T2, T3> (fn: (a: T1, b: T2, c: T3) => T, a: T1): (b: T2, c: T3) => T;
 export function curry (fn: any, ...bindArg: any[]) {
   return (...restArg: any[]) => fn(...bindArg, ...restArg)
+}
+
+(Array.prototype as any).groupBy = function<T> (this: Array<T>, key: keyof T) {
+  return this.reduce((p, c) => {
+    const v = c[key]
+    const targetBucket = p.find(x => x[0][key] === v)
+    if (targetBucket) {
+      targetBucket.push(c)
+    } else {
+      p.push([c])
+    }
+    return p
+  }, [] as T[][])
+}
+
+/**
+ * vue props用于推导自定义类型的辅助函数
+ * @example
+ * props: {
+ *   data: customPropsType<Data>(), // 非空，自定义接口
+ *   getState: customPropsType<(id: number) => State>(false), // 可空，函数
+ *   enable: customPropsType<boolean>(false, Boolean) // 可空，运行时类型检查
+ * }
+ * @param required 参数必填 默认true
+ * @param type 传入构造函数进行动态检查
+ */
+export function customPropsType <T extends Function> (required?: true, type?: PropType<T>): { type: PropType<T> ; required: true };
+export function customPropsType <T extends Function> (required: boolean, type?: PropType<T>): { type: PropType<T> };
+export function customPropsType <T> (required?: true, type?: PropType<T>): Prop<T> & { required: true };
+export function customPropsType <T> (required: boolean, type?: PropType<T>): Prop<T>;
+export function customPropsType (required: any = true, type: any) {
+  return {
+    type: type || null, // ts没办法通过在不传入参数的情况下，通过泛型实现不同的函数定义。类型定义够多的情况下，使用静态类型检查足矣
+    required
+  }
 }

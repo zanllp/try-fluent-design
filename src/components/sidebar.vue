@@ -15,15 +15,12 @@
 import { defineComponent, provide, reactive, ref, onMounted, inject } from 'vue'
 import { windowState, incrMaxZindex } from './window'
 import { ContainersState, useAutoLayout } from './window-container'
+import { customPropsType } from '../util'
 
 export default defineComponent({
   name: 'window-container-sidebar',
   props: {
-    containerState: {
-      default: () => {
-        return {} as ContainersState
-      }
-    }
+    containerState: customPropsType<ContainersState>()
   },
   setup (props) {
     const windows = ref(new Array<windowState>())

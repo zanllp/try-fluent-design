@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { defineComponent, computed, ComputedRef } from 'vue'
-import { BreakPointFlag, usePriorityBreakPoint, breakPointPriorityListAsc } from '@/util'
+import { BreakPointFlag, usePriorityBreakPoint, breakPointPriorityListAsc, customPropsType } from '@/util'
 
 type BreakPointObjPart = { [k in BreakPointFlag]?: number }
 type ColParams = number|BreakPointObjPart
@@ -62,14 +62,7 @@ const useColClass = (breakPoint: ReturnType<typeof usePriorityBreakPoint>, offse
 export default defineComponent({
   name: 'fd-col',
   props: {
-    span: {
-      default: () => {
-        if (' '.length) { // 这么做是因为vue弱鸡的类型推断
-          throw new Error('col组件的span必填！')
-        }
-        return 0 as string | ColParams
-      }
-    },
+    span: customPropsType<string | ColParams>(),
     offset: {
       default: 0 as number | ColParams
     }
