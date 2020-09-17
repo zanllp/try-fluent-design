@@ -12,12 +12,7 @@ import { AnyBlockState } from '@/util'
 
 export default defineComponent({
   name: 'reveal',
-  props: {
-    value: {
-      type: String
-    }
-  },
-  setup (props) {
+  setup () {
     const domRef = ref<HTMLElement>()
     const rect = ref<DOMRect | null>(null)
     let ro: ResizeObserver
@@ -36,13 +31,13 @@ export default defineComponent({
       }
       ro = new ResizeObserver(entries => {
         rect.value = entries[0].target.getBoundingClientRect()
-        updateState({ value: props.value, rect: rect.value, id: blockId.value || -1 })
+        updateState({ rect: rect.value, id: blockId.value || -1 })
       })
       ro.observe(dom)
-      blockId.value = regist({ value: props.value, rect: rect.value, id: -1 })
+      blockId.value = regist({ rect: rect.value, id: -1 })
       onWillUpdateRect(() => {
         rect.value = dom.getBoundingClientRect()
-        updateState({ value: props.value, rect: rect.value, id: blockId.value! })
+        updateState({ rect: rect.value, id: blockId.value! })
       }, blockId.value)
     })
     onUnmounted(() => {
