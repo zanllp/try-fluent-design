@@ -7,7 +7,7 @@
 
 <script lang="ts">
 import { defineComponent, provide, reactive, ref, computed, onMounted } from 'vue'
-import { windowState } from './window'
+import { WindowState } from './window'
 import { getCallBackQuene } from '@/callbackPoll'
 import { ContainersState, useAutoLayout } from './window-container'
 import sidebar from './sidebar.vue'
@@ -22,12 +22,12 @@ export default defineComponent({
   },
   setup (props) {
     const state: ContainersState = reactive({
-      windowTriggerPool: new Map<'click', windowState[]>(),
+      windowTriggerPool: new Map<'click', WindowState[]>(),
       bodyRect: null,
-      windows: new Array<windowState>(),
+      windows: new Array<WindowState>(),
       flagSet: new Set()
     })
-    provide('add-trigger-window', (type: 'click', winstate: windowState) => {
+    provide('add-trigger-window', (type: 'click', winstate: WindowState) => {
       const quene = state.windowTriggerPool.get('click')
       if (quene) {
         quene.push(winstate)
@@ -39,7 +39,7 @@ export default defineComponent({
       state.bodyRect = body[0].target.getBoundingClientRect()
     })
     provide('windows', state.windows)
-    provide('window-regist', (window: windowState) => {
+    provide('window-regist', (window: WindowState) => {
       state.windows.push(window)
     })
     const selfRef = ref<HTMLDivElement | null>(null)
@@ -49,7 +49,7 @@ export default defineComponent({
         ro.observe(dom)
         setTimeout(() => {
           useAutoLayout(state)
-        }, 0)
+        }, 500)
       }
     })
     const onMouseMove = (e: MouseEvent) => {

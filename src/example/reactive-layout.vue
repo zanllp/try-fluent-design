@@ -1,5 +1,5 @@
 <template>
-  <window :init-pos="{ top: 512, left: 480 }" name="响应式24栏栅格">
+  <window :init-pos="{ top: 512, left: 1024 }" name="响应式24栏栅格">
     <reveal-container>
       <fd-row>
         <fd-col
@@ -8,7 +8,7 @@
           :span="{ xs:6 , md:5, xl: 4 }"
           :offset="{ xs:0 , md: 1 , xl: 2 }"
         >
-          <reveal :value="block">{{ block }}</reveal>
+          <reveal>{{ block }}</reveal>
         </fd-col>
       </fd-row>
       <fd-row>

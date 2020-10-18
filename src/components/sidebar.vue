@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import { defineComponent, provide, reactive, ref, onMounted, inject } from 'vue'
-import { windowState, incrMaxZindex } from './window'
+import { WindowState, incrMaxZindex } from './window'
 import { ContainersState, useAutoLayout } from './window-container'
 import { customPropsType } from '../util'
 
@@ -23,14 +23,14 @@ export default defineComponent({
     containerState: customPropsType<ContainersState>()
   },
   setup (props) {
-    const windows = ref(new Array<windowState>())
+    const windows = ref(new Array<WindowState>())
     const windowsListRef = ref<HTMLUListElement>()
     const blockRect = reactive({ width: 0, height: 0 })
     provide('window-size', blockRect)
     onMounted(() => {
-      windows.value = inject<windowState[]>('windows', [])
+      windows.value = inject<WindowState[]>('windows', [])
     })
-    const pullWindow = (win: windowState) => {
+    const pullWindow = (win: WindowState) => {
       win.zIndex = incrMaxZindex()
     }
     const autoLayout = () => {

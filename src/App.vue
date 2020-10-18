@@ -1,5 +1,5 @@
 <template>
-  <window-container class="window-manage" :bg-url="bgUrl">
+  <window-container :bg-url="bgUrl">
     <calculator />
     <calendar />
     <layout />

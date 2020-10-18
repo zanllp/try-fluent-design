@@ -2,7 +2,8 @@
 import { resetArray, curry } from '@/util'
 import { cloneDeep } from 'lodash'
 import { watch } from 'vue'
-import { windowState } from './window'
+import { WindowState } from './window'
+
 export type BaseLine = { y: number; width: number }
 
 /**
@@ -122,7 +123,7 @@ type AllocConf = {
   hasInsertFirst: boolean;
 }
 
-const alloc = (conf: AllocConf, curr: windowState) => {
+const alloc = (conf: AllocConf, curr: WindowState) => {
   const { baselines, scale, margin } = conf
   const insertBaseLine = curry(insertBaseLinePF, baselines)
   let x = 0
@@ -173,15 +174,15 @@ const alloc = (conf: AllocConf, curr: windowState) => {
 }
 
 export type ContainersState = {
-  windows: windowState[];
+  windows: WindowState[];
   bodyRect: DOMRect | null;
-  windowTriggerPool: Map<'click', windowState[]>;
+  windowTriggerPool: Map<'click', WindowState[]>;
   flagSet: Set<'window-switch'>;
 }
 
-type Layout = { bind: windowState; scale: number; x: number; y: number }
+type Layout = { bind: WindowState; scale: number; x: number; y: number }
 
-const watchExpandTrigger = (state: ContainersState, res: Layout[], stateBackup: windowState[]) => {
+const watchExpandTrigger = (state: ContainersState, res: Layout[], stateBackup: WindowState[]) => {
   const stop = watch(state.windowTriggerPool, val => {
     val.get('click')?.forEach(() => {
       stop()
@@ -210,7 +211,7 @@ const watchExpandTrigger = (state: ContainersState, res: Layout[], stateBackup: 
 }
 
 type Padding = { top: number; left: number; right: number; bottom: number }
-const startTileAnimal = (res: Layout[], containerPadding: Padding, windowMargin: number, state: ContainersState, stateBackup: windowState[]) => {
+const startTileAnimal = (res: Layout[], containerPadding: Padding, windowMargin: number, state: ContainersState, stateBackup: WindowState[]) => {
   const se = res.map(start => {
     const end = cloneDeep(start.bind)
     end.initPos = {

@@ -7,7 +7,7 @@ const cursorMap: { [k in StateFlag]?: string } = {
   resize: 'nwse-resize'
 }
 type Pos = { top: number; left: number }
-export const useInitState = (initPos: Pos, name: string, size: Size) => {
+export const useInitState = (initPos: Pos, hasInitPos: boolean, name: string, size: Size) => {
   return reactive({
     offset: { top: 0, left: 0 },
     size,
@@ -16,13 +16,14 @@ export const useInitState = (initPos: Pos, name: string, size: Size) => {
     flagSet: new Set<StateFlag>(),
     initPos,
     name,
+    hasInitPos,
     scale: 1,
     id: getIncrementId('window'),
     styles: new Array<string>()
   })
 }
-export type windowState = ReturnType<typeof useInitState>
-export const useWindowWrapStyle = (state: windowState) => {
+export type WindowState = ReturnType<typeof useInitState>
+export const useWindowWrapStyle = (state: WindowState) => {
   const s = state
   const style = computed(() => {
     const bgPos = {
@@ -58,8 +59,8 @@ export const incrMaxZindex = () => ++maxZIndex
 /**
  * 窗口移动和组件重置
  */
-export const useWindowControl = (state: windowState) => {
-  const addTrigrWindow = inject<(type: 'click', winstate: windowState) => void>('add-trigger-window')
+export const useWindowControl = (state: WindowState) => {
+  const addTrigrWindow = inject<(type: 'click', winstate: WindowState) => void>('add-trigger-window')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const control = (_e: MouseEvent) => {
     addTrigrWindow && addTrigrWindow('click', state)

@@ -62,9 +62,9 @@ import {
 import { debounce } from 'lodash'
 import { addCallBack } from '@/callbackPoll'
 import { Size, AnyBlockState, getIncrementId } from '@/util'
-import { windowState } from './window'
+import { WindowState } from './window'
 
-const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: number }>, state?: Ref<windowState>) => {
+const useSvg = (windowSize: Ref<Size>, windowOffset: Ref<{ top: number; left: number }>, state?: Ref<WindowState>) => {
   type state = {
     rect: {
       width: number;
@@ -185,7 +185,7 @@ const useProvider = (blocks: Array<AnyBlockState>) => {
 export default defineComponent({
   name: 'reveal-container',
   setup () {
-    const state = inject<Ref<windowState>>('window-state')
+    const state = inject<Ref<WindowState>>('window-state')
     const id = getIncrementId('block-container')
     const initOffset = { top: 0, left: 0 }
     const windowSize = ref({ width: 200, height: 200 })
