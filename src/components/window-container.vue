@@ -47,6 +47,11 @@ export default defineComponent({
       const dom = selfRef.value
       if (dom) {
         ro.observe(dom)
+        document.body.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && e.target === document.body) {
+            useAutoLayout(state)
+          }
+        })
         setTimeout(() => {
           useAutoLayout(state)
         }, 500)
