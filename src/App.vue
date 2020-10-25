@@ -21,7 +21,7 @@
   </window-container>
 </template>
 
-<script lang="ts">/* eslint-disable vue/no-unused-components */
+<script lang="ts">
 import { defineComponent, toRef, reactive } from 'vue'
 import { sharedState } from './store'
 import { createArray } from './util'
