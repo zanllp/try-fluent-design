@@ -3,17 +3,25 @@
 
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 ## 部分特性
+
 ### 拖拽动态模糊
-![](./doc-img/move.gif)
+
+![move](https://user-images.githubusercontent.com/25872019/101237740-31d84f80-3716-11eb-9ed1-e53b871bc753.gif)
+
 ### 窗口尺寸改变
-![](./doc-img/resize.gif)
+
+![move](https://user-images.githubusercontent.com/25872019/101237740-31d84f80-3716-11eb-9ed1-e53b871bc753.gif)
+
 ### reveal
-![](./doc-img/glow.gif)
+
+![glow](https://user-images.githubusercontent.com/25872019/101237805-a612f300-3716-11eb-8c8c-6405e2a8a0db.gif)
+
 ### 响应式24栏栅格
+
 支持xs,sm,md,lg,xl五种尺寸,断点尺寸响应window组件的宽度变化，而不是视口的宽度
 [点这里看例子源码](./src/example/reactive-layout.vue)
 
-![](./doc-img/reactive-break-point.gif)
+![reactive-break-point](https://user-images.githubusercontent.com/25872019/101237821-c9d63900-3716-11eb-9ece-e8c2ebf2d996.gif)
 
 ## TODO
 * 自动布局
@@ -30,8 +38,8 @@
 ### 一个不够健壮的流畅设计风格计算器
 [点这里看源码](./src/example/calculator.vue)
 
-![计算器](./doc-img/calculator.png)
+<img width="671" alt="calculator" src="https://user-images.githubusercontent.com/25872019/101237842-e2deea00-3716-11eb-84a8-c5037956feea.png">
 ### 日历
 [点这里看源码](./src/example/calendar.vue)
 
-![日历](./doc-img/calendar.PNG)
+![calendar](https://user-images.githubusercontent.com/25872019/101237858-f7bb7d80-3716-11eb-992d-e7ef829bc706.png)
