@@ -10,7 +10,7 @@
 
 ### 窗口尺寸改变
 
-![move](https://user-images.githubusercontent.com/25872019/101237740-31d84f80-3716-11eb-9ed1-e53b871bc753.gif)
+![resize](https://user-images.githubusercontent.com/25872019/101237794-8380da00-3716-11eb-9882-b96474209a1d.gif)
 
 ### reveal
 
