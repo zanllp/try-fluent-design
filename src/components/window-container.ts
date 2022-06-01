@@ -192,7 +192,7 @@ const watchExpandTrigger = (state: ContainersState, res: Layout[], stateBackup: 
         return pc.forEach.bind(pc)
       }
       getPrevCurrForeach()(({ s, e }) => {
-        s.bind.flagSet.add('animal')
+        s.bind.flagSet.add('anim')
         s.bind.flagSet.delete('start')
         s.bind.scale = e.scale
         s.bind.initPos = e.initPos
@@ -201,7 +201,7 @@ const watchExpandTrigger = (state: ContainersState, res: Layout[], stateBackup: 
       setTimeout(() => {
         getPrevCurrForeach()(({ s }) => {
           s.bind.flagSet.delete('tile')
-          s.bind.flagSet.delete('animal')
+          s.bind.flagSet.delete('anim')
         })
       }, 700)
       val.delete('click')
@@ -211,7 +211,7 @@ const watchExpandTrigger = (state: ContainersState, res: Layout[], stateBackup: 
 }
 
 type Padding = { top: number; left: number; right: number; bottom: number }
-const startTileAnimal = (res: Layout[], containerPadding: Padding, windowMargin: number, state: ContainersState, stateBackup: WindowState[]) => {
+const startTileAnim = (res: Layout[], containerPadding: Padding, windowMargin: number, state: ContainersState, stateBackup: WindowState[]) => {
   const se = res.map(start => {
     const end = cloneDeep(start.bind)
     end.initPos = {
@@ -231,14 +231,14 @@ const startTileAnimal = (res: Layout[], containerPadding: Padding, windowMargin:
   se.forEach(({ start: s, end: e }) => {
     s.bind.flagSet.delete('start')
     s.bind.flagSet.add('tile')
-    s.bind.flagSet.add('animal')
+    s.bind.flagSet.add('anim')
     s.bind.scale = e.scale
     s.bind.initPos = e.initPos
     s.bind.offset = e.offset
   })
   setTimeout(() => {
     se.forEach(({ start: s }) => {
-      s.bind.flagSet.delete('animal')
+      s.bind.flagSet.delete('anim')
     })
     watchExpandTrigger(state, res, stateBackup)
   }, 700)
@@ -295,7 +295,7 @@ export const useAutoLayout = (state: ContainersState) => {
       }
     }
   }
-  startTileAnimal(res, containerPadding, windowMargin, state, stateBackup)
+  startTileAnim(res, containerPadding, windowMargin, state, stateBackup)
   debug(baselines, '结束')
   debug(res)
 }

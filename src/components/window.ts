@@ -1,7 +1,7 @@
 import { computed, inject, reactive } from 'vue'
 import { getIncrementId, Size } from '@/util'
 
-export type StateFlag = 'start' | 'resize' | 'animal' | 'ani-delay' | 'tile'
+export type StateFlag = 'start' | 'resize' | 'anim' | 'ani-delay' | 'tile'
 const cursorMap: { [k in StateFlag]?: string } = {
   start: 'move',
   resize: 'nwse-resize'
@@ -41,7 +41,7 @@ export const useWindowWrapStyle = (state: WindowState) => {
     z-index:${s.zIndex};
     background-size:${(1 / state.scale) * 100}vw;
     transform-origin: top left;`)
-    if (state.flagSet.has('animal')) {
+    if (state.flagSet.has('anim')) {
       styleList.push('transition: all .7s ease')
     }
     if (state.flagSet.has('ani-delay')) {
@@ -66,7 +66,7 @@ export const useWindowControl = (state: WindowState) => {
     addTrigrWindow && addTrigrWindow('click', state)
     state.flagSet.add('start')
     if (state.zIndex < maxZIndex) {
-      console.log(state.flagSet.has('animal'))
+      console.log(state.flagSet.has('anim'))
       state.zIndex = maxZIndex + 1 // 让点击到窗口保持在最上层
       maxZIndex = state.zIndex
     }
