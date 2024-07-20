@@ -1,0 +1,54 @@
+name: Publish
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+    - name: github page repo
+      uses: actions/checkout@v3
+      with:
+          repository: zanllp/zanllp.github.io
+          path: build
+    - uses: actions/checkout@v2
+      with:
+          path: try-fluent-design
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - uses: bahmutov/npm-install@v1
+      with:
+          working-directory: ${{github.workspace}}/try-fluent-design
+    - name:  build
+      working-directory: ${{github.workspace}}/try-fluent-design
+      run: |
+        yarn build
+    - name: copy released file
+      working-directory: ${{github.workspace}}/try-fluent-design/dist
+      run: |
+        mv index.html try-fluent-design.html
+        cp -R . ../../build
+    - name: create pull request
+      uses: peter-evans/create-pull-request@v4
+      with:
+          commit-message: Update released files
+          title: Update released files
+          branch: update-released-files
+          # author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com> useless
+          delete-branch: true
+          body: |
+             Triggered by [${{ github.sha }}](https://github.com/zanllp/try-fluent-design.html/commit/${{ github.sha }})
+          path: ${{github.workspace}}/build
+          token: ${{ secrets.PAT }}
+          labels: |
+            automated pr
+          assignees: zanllp
