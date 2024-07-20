@@ -38,7 +38,7 @@ jobs:
         mv index.html try-fluent-design.html
         cp -R . ../../build
     - name: create pull request
-      uses: peter-evans/create-pull-request@v4
+      uses: peter-evans/create-pull-request@v6
       with:
           commit-message: Update released files
           title: Update released files
